@@ -1,0 +1,33 @@
+html,body,#root,#App.isloading{
+	height:100%;
+}
+body{
+	background:var(--background);
+	overflow-y: scroll;
+}
+
+.group:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+:root{
+	--background:#EFEFEF;
+	--text:white;
+	--text2:black;
+	--color1:#6AAC6B;
+}
+
+a{
+	outline:none
+}
+img{
+	line-height:0;
+}
+
+#App{
+	overflow:hidden;
+	display:flex;
+	flex-direction:column;
+}

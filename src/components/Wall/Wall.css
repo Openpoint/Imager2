@@ -1,0 +1,184 @@
+#wall #head{
+	display:flex;
+	padding:20px;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+}
+#wall #head a{
+	color:var(--color1);
+}
+#wall #head h2{
+	font-size:1.2em;
+	text-transform:uppercase;
+	margin:0
+}
+#wall #head p{
+	margin:0;
+	line-height:1.5em;
+	max-width:500px;
+	text-align:center;
+	margin-top:10px;
+}
+#wall #head .controls{
+	display:flex;
+	align-items: center;
+	justify-content: center;
+	color:var(--color1);
+	margin-bottom:10px;
+}
+#wall #head .control{
+	padding:8px;
+	cursor:pointer;
+	opacity:.5;
+	position:relative;
+}
+#wall #head .control:hover{
+	opacity:1;
+}
+#wall{
+	padding:20px;
+	padding-bottom:400px;
+	position:relative;
+	flex:1;
+}
+
+.isloading #wall{
+	color:var(--color1);
+	display:flex;
+	justify-content: center;
+	align-items: center;
+	padding-bottom:100px;
+}
+#wall .image{
+	position:relative;
+	display:block;
+	padding:5px;
+	break-inside: avoid-column;
+	z-index:1;
+	box-sizing: border-box;
+	width:100%;
+}
+#imagesizer{
+	width:100%;
+}
+.front #imagesizer{
+	width:20%;
+}
+.front .image .tooltip.bottom{
+	max-width:90%!important;
+	width:90%;
+}
+#wall .image img{
+	width:100%;
+	height:auto;
+}
+#lazy{
+	text-align:center;
+	padding:40px;
+	box-sizing: border-box;
+}
+#wall .image .spacer{
+	float:left;
+}
+
+#wall .iback{
+	border-radius:5px;
+	overflow:hidden;
+	background:var(--color1);
+	opacity:.5;
+	transition:opacity .5s;
+}
+#wall .ifront{
+	border-radius:5px;
+	background:none;
+	transition:background-color 1s;
+	position:absolute;
+	z-index:1;
+	top:5px;
+	left:5px;
+	right:5px;
+	bottom:5px;
+	opacity:0;
+	transition:opacity 1s;
+	cursor:pointer;
+	background-size:100%!important;
+	overflow:hidden;
+}
+#wall .ifront canvas{
+	width:100%;
+	height:100%;
+}
+#wall .image:hover .controls{
+	opacity:1;
+}
+#wall .loaded .ifront{
+	opacity:1;
+}
+#wall .loading .iback{
+	opacity:1;
+}
+#wall .image .controls{
+	position:absolute;
+	top:8px;
+	left:8px;
+	right:8px;
+	z-index:2;
+	opacity:0;
+	transition:opacity 1s;
+	text-align:center;
+}
+#wall .image .control{
+	margin:5px;
+	display:inline-block;
+	position:relative;
+	box-sizing: border-box;
+	cursor:pointer;
+}
+#wall .image .control span{
+	background:rgba(0,0,0,.85);
+	padding:8px;
+	border-radius:50%;
+	color:white;
+}
+#wall .progress{
+	display:flex;
+	flex-direction:column;
+	align-items: center;
+	justify-content: center;
+}
+#wall .progress .message{
+	margin-top:40px;
+	max-width:600px;
+}
+#wall .favicon{
+	position:absolute;
+	top:0;
+	left:0;
+	width:32px;
+	height:32px;
+	background:rgba(255,255,255,.5);
+	z-index:2;
+	margin:15px;
+	padding:5px;
+	border-radius:50%;
+	display:flex;
+	align-items: center;
+	justify-content: center;
+}
+#wall .favicon img{
+	line-height:0;
+	width:22px;
+	height:auto;
+	transition:opacity .5s;
+}
+
+@keyframes comeIn {
+    0% { transform: scale(0) }
+    100% { transform: scale(1) }
+}
+
+.xmasonry .xblock {
+    animation: comeIn 0.5s;
+    animation-iteration-count: 1;
+}
