@@ -17,11 +17,12 @@ function (doc) {
 		var returned = {
 			parent:doc._id,
 			parenturl:doc.link,
-			info:doc.title+' | '+doc.description,
+			title:doc.title,
+			description:doc.description,
 			favicon:doc.favicon
 		};
 		Object.keys(image).forEach(function(key){
-			if(image.hasOwnProperty(key)) returned[key] = image[key];
+			if(image.hasOwnProperty(key) && ! returned[key]) returned[key] = image[key];
 		})
 		emit(doc.date,returned);
 	}

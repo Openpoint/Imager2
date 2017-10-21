@@ -1,45 +1,42 @@
 "use strict";
 const request = require('request');
-const host = 'localhost:5984/imager/';
-const protocol = 'http://';
-const user = 'imager:Imager@Couchdb@';
-const couch = protocol+user+host;
-const compile = require('couchdb-compile');
 const tools = require('../src/modules/tools.js');
-
-function design(path){
-	compile('server/design/'+path, function(error, doc) {
-		if(error){
-			console.log(error);
-		}else{
-			var id = doc['_id'];
-			request.get({
-				url:couch+id
-			},function(err,resp,body){
-				var url = couch+id;
-				var b = JSON.parse(body)
-				if(!error) url+='?rev='+b['_rev'];
-				request.put({
-					url:url,
-					body:doc,
-					json:true,
-				},function(err,resp,body){
-					if(err){
-						console.log(err);
-					}else{
-						//console.log(body);
-					}
-				})
-			})
-		}
-	});
-}
-design('image');
-
+const fs = require('fs');
+var settings = require('./settings.json');
+const design = require('./compile.js');
 var jwt = require('jsonwebtoken');
 const supersecret = 'supersecret';
 
+//create the database connection strings;
+var couch,host,protocol;
+function makeCouch(){
+	var i = settings.install;
+	var u = settings.user;
+	protocol = i.protocol+'://';
+	host = i.host+':'+i.couchport+'/';
+	couch = protocol+u.username+':'+u.password+'@'+host+i.dbname+'/';
+	//var host = i.protocol+'://'+u.username+':'+u.password+'@'+i.host+':'+i.couchport+'/';
+	//couch = host+i.dbname+'/';
+}
+
 var crud = function(app){
+	if(!settings.install.installed){
+		const install = require('../server/install.js');
+		install(app,settings).then(function(nsettings){
+			settings = nsettings;
+			makeCouch();
+		})
+	}else{		
+		makeCouch();
+		if(process.argv[2]==='development') design('image',couch)
+	}
+	app.get("*",function(req,res,next){
+		if(settings.install.installed){
+			next();
+			return;
+		}
+		res.send(settings);
+	})
 
 	app.get('/:action/*',function(req,res,next){
 		var url = couch+req.params.action+'/'+req.params[0];
@@ -59,11 +56,13 @@ var crud = function(app){
 			break;
 			case 'login':
 				var username = req.query.username;
-				var req = protocol+req.query.username+':'+req.query.password+'@'+host;
+				var req = protocol+req.query.username+':'+req.query.password+'@'+host+settings.install.dbname;
+				console.log(req);
 				request.get({
 					url:req,
 					json:true,
 				},function(err,resp,body){
+					console.log(body);
 					if(!err && !body.error && body.db_name){
 						var token = jwt.sign({username:username},supersecret,{expiresIn:'1d'});
 						res.send({auth:true,token:token})
@@ -79,10 +78,6 @@ var crud = function(app){
 
 	})
 
-	app.post('/:action/*',function(req,res,next){
-		res.send('hello')
-	})
-
 	app.put('/:id',function(req,res,next){
 		request.get({
 			//first check if the page already exists
@@ -91,7 +86,6 @@ var crud = function(app){
 		},function(err,resp,body){
 			if(body._rev){
 				//Update the page
-				console.log(body.favicon);
 				request.put({
 					url:couch+'_design/image/_update/merge/'+req.params.id,
 					body:req.body,
@@ -164,6 +158,8 @@ var crud = function(app){
 		}
 	})
 }
+
+//check if a auth token is valid
 function auth(token){
 	if(token === 'undefined') return 'no token given';
 	return jwt.verify(token, supersecret, function(err, decoded){
@@ -174,4 +170,5 @@ function auth(token){
 		}
 	})
 }
+
 module.exports = crud;

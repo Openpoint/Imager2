@@ -17,6 +17,7 @@ var corsOptions = {
 }
 app.use(cors(corsOptions));
 app.use(bodyParser.json({limit: '5mb'}));
+
 new require('./server/crud.js')(app);
 new require('./server/scraper.js')(app);
 

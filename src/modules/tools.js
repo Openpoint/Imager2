@@ -21,12 +21,14 @@ tools.prototype.imageSort = function(images,context){
 	if(!images) return [];
 	var index = {};
 	//remove duplicate images
-	images = images.filter(function(img){
+	images = images.map(function(img,i){
 		if(!index[img.index]){
 			index[img.index]=true;
-			return true;
+			return img;
 		}else{
-			return false;
+			console.error('dupe:' +i);
+			img.index = img.index*10+i
+			return img;
 		}
 	})
 	//return images for front page
@@ -47,6 +49,7 @@ tools.prototype.imageSort = function(images,context){
 	types.small = this.sort(types.small,'date','desc');
 	return types.big.concat(types.small);
 }
+
 tools.prototype.decode = function(encoded){
 	if(!encoded || typeof encoded!=='string') return false;
 	var decoded = document.createElement('textarea');
@@ -55,6 +58,7 @@ tools.prototype.decode = function(encoded){
 	decoded = null;
 	return dec;
 }
+/*
 tools.prototype.getFunctions = function(f){
 	var functions = {}
 	Object.keys(f).forEach((key)=>{
@@ -64,6 +68,7 @@ tools.prototype.getFunctions = function(f){
 	})
 	return functions;
 }
+*/
 tools.prototype.querystring = function(req,params){
 	if(params && typeof params === 'object'){
 		Object.keys(params).forEach(function(key,i){
@@ -83,6 +88,7 @@ tools.prototype.sitename = function(url){
 	if(url.split('.')[0].indexOf('www') === 0) url = url.replace('www.','')
 	return(url);
 }
+
 tools.prototype.getClass = function(image){
 	var w;
 	if(image.class === 'small'){
@@ -98,5 +104,22 @@ tools.prototype.filetype = function(file){
 	file=file.split('?')[0].split('.');
 	file = file[file.length-1];
 	return file.toLowerCase();
+}
+
+//cancel pending promises (make sure the promise has been created with bluebird, not native Promise)
+tools.prototype.cancel = function(p){
+	Object.keys(p).forEach(function(key){
+		if(p.hasOwnProperty(key)) p[key].cancel();
+	})
+}
+
+//hack to save page data to API before page closes
+tools.prototype.sleep = function(milliseconds) {
+	var start = new Date().getTime();
+	for (var i = 0; i < 1e7; i++) {
+		if ((new Date().getTime() - start) > milliseconds){
+			break;
+		}
+	}
 }
 module.exports = new tools();

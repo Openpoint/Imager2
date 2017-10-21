@@ -1,58 +1,212 @@
-var imager_tools = {
-	isImage:function(href){
-		var ext = href.split('.').pop();
+window.imager_tools = function(){
+	var i$;
+	var self = this;
+	this.isImage = function(href){
+		if(!href) return false;
+		var ext = href.split('?')[0];
+		ext = ext.split('.');
+		ext=ext.pop();
 		if(ext && ['jpg','jpeg','png','gif'].indexOf(ext.toLowerCase()) > -1){
-			return true;
+			return href;
 		}else{
 			return false;
 		}
 	},
-	fix:function(href){
+	this.fix = function(href){
+		if(href.indexOf('data:image')===0) return href;
 		if(href.indexOf('http')!==0){
-			if(href.indexOf('//')===0) href = href.replace('//','');
-			href = 'http://'+href;
+			if(href.indexOf('//')===0){
+				href = href.replace('//','');
+				href = 'http://'+href;
+			}else{
+				href = window.location.href+href
+			}
 		}
+		if(this.isImage(href)) href = href.split('?')[0];
+		console.log(href)
 		return href;
 	},
-	scrape:function(){
-		try{
-			var foo = [];
-			var JQ = window.jQuery;
-			JQ('img').each(function(){
-				if(this.src) foo.push({src:this.src,alt:this.alt});
+	this.scroll = function(wh,dir,oh,resolve,count){
+		var h;
+		var scroll;
+		var to = 2000;
+		switch(dir){
+			case 'y':
+				h = i$(document).outerHeight();
+			break;
+			case 'x':
+				h = i$(document).outerWidth();
+			break
+		}
+
+		if(!resolve){
+			var init = true;
+			count = 0;
+			var p = new Promise(function(res,reject){
+				resolve = res;
 			});
-			JQ('.efImageLink').each(function(){
-				console.log('YES')
+		}else{
+			count++
+		}
+		if(h <= wh||h===oh||count > 10){
+			if(init){
+				to = 0;
+			}else{
+				resolve(true);
+				return;
+			}
+		}
+		dir==='y'?i$(window).scrollTop(h-wh):i$(window).scrollTop(h-wh);
+		setTimeout(function(){
+			self.scroll(wh,dir,h,resolve,count)
+		},to)
+		if(init) return p;
+	},
+	this.scrape = function(site){
+		this.site = site;
+		i$ = window.jQuery;
+		var self = this;
+		console.log("scraping")
+		if(document.readyState === 'complete'){
+			if(!self.launched) go();
+		}else{
+			i$(window).on('load',function(){
+				if(!self.launched) go();
 			})
-			JQ('*').each(function(){
-				if(JQ(this).css('background-image').indexOf('url(') === 0){
-					foo.push({src:window.jQuery(this).css('background-image')})
-				}
-				if(JQ(this).attr('href') && imager_tools.isImage(window.jQuery(this).attr('href'))){
-					foo.push({src:imager_tools.fix(JQ(this).attr('href'))});
-				}
-			})
+			self.gto = setTimeout(function(){
+				if(!self.launched) go()
+			},3000)
+		}
+
+		function go(){
+			console.log('gooooooooooooooooooo!')
+			clearTimeout(self.gto);
+			self.launched = true;
+			var wh = i$(window).height();
+			var ww = i$(window).width();
+			var count = 0;
+			self.scroll(wh,'y').then(function(){
+				console.log('at the bottom');
+				count++;
+				if(count === 2) self.ready();
+			});
+			self.scroll(wh,'x').then(function(){
+				console.log('at the right');
+				count++;
+				if(count === 2) self.ready();
+			});
+		}
+		return true;
+	},
+	this.mod = function(src){
+		console.log(src)
+		if(!src) return false;
+		if(src.indexOf('url(')===0){
+			src = src.slice(0, -1).replace('url(','').trim();
+		}
+		if(this.site==='flickr'){
+			if(src.indexOf('/sprites/') > -1) return false;
+			src = src.split('?');
+			src[0] = src[0].split('/');
+			src[0][src[0].length-1] = src[0][src[0].length-1].split('.')
+			var f = src[0][src[0].length-1][0];
+			var end = f.slice(-2);
+			if(end.indexOf('_')===0) src[0][src[0].length-1][0] = f.replace(end,'_b');
+			src[0][src[0].length-1] = src[0][src[0].length-1].join('.')
+			src[0] = src[0].join('/');
+			src = src.join('?');
+		}
+		if(this.site==='google'){
+			if(src.indexOf('gstatic.com')!==-1) return false;
+			if(src.indexOf('imgurl=')!==-1){
+				src=src.split('imgurl=')[1].split('&')[0];
+				src = decodeURIComponent(src);
+			}
+		}
+		if(this.site==='imgur'){
+			//src=src.split('.');
+			//src[src.length-2] = src[src.length-2].slice(0.-1);
+			//src = src.join('.');
+			//console.log(src)
+		}
+		src = self.fix(src);
+		return src;
+	},
+	this.search = function(i,foo){
+		if(i.css('background-image').indexOf('url(') === 0){
+			var src = i.css('background-image');
+			src = this.mod(src);
+			if(src) this.foo.push({src:src})
+		}
+		if(i.attr('href')){
+			src = this.mod(i.attr('href'));
+			src = self.isImage(src);
+			if(src) this.foo.push({src:src});
+		}
+	},
+	this.ready = function(){
+		try{
+			this.foo = [];
+			var self = this;
+			if(this.site === 'google'){
+				i$('.rg_meta').each(function(){
+					var data = i$(this).html();
+					try {
+						data = JSON.parse(data);
+						if(data.ou){
+							self.foo.push({
+								src:data.ou,
+								alt:data.pt||'',
+								url:data.ru||null,
+								urltitle:data.st||null
+							})
+						}
+					}
+					catch(err){
+						console.error(err);
+					}
+				})
+			}
+			if(!this.foo.length){
+				i$('img,object').each(function(){
+					this.src = self.mod(this.src)
+					if(this.src) self.foo.push({src:this.src,alt:this.alt});
+				});
+
+				i$('div,a,span,body,li,main,td,table,tr,th').each(function(){
+					self.search(i$(this));
+				})
+			}
+
 			var favicon;
 			var favicon2;
-			JQ('head link').each(function(){
-				var rel = JQ(this).attr('rel');
+			i$('head link').each(function(){
+				var rel = i$(this).attr('rel');
 				if(rel) rel = rel.toLowerCase();
-				if(rel && (rel === 'shortcut' || rel === 'icon')) favicon2 = JQ(this).attr('href');
-				//if(rel && (rel.indexOf('shortcut')!==-1 || rel.indexOf('icon')!==-1)) icons2.unshift(JQ(this).attr('href'));
+				if(rel && (rel === 'shortcut' || rel === 'icon')) favicon2 = i$(this).attr('href');
+				//if(rel && (rel.indexOf('shortcut')!==-1 || rel.indexOf('icon')!==-1)) icons2.unshift(i$(this).attr('href'));
 				if(rel && rel.indexOf('shortcut')!==-1 && rel.replace('icon','').replace('shortcut','').trim().length === 0){
-					favicon = JQ(this).attr('href');
+					favicon = i$(this).attr('href');
 				}
 			})
 			var frames = [];
-			JQ('iframe').each(function(){
-				var src = JQ(this).attr('src');
+			/*
+			i$('iframe').each(function(){
+				var src = i$(this).attr('src');
 				if(src) frames.push(src);
 			})
+			*/
 			if(!favicon && favicon2) favicon = favicon2;
-			return {frames:frames,images:foo,title:JQ('title').html(),description:JQ('meta[name=description]').attr("content"),favicon:favicon};
+			var result =  {frames:frames,images:this.foo,title:i$('title').html(),description:i$('meta[name=description]').attr("content"),favicon:favicon};
+			if (typeof window.callPhantom === 'function') {
+				window.callPhantom(result);
+			}else{
+				console.error('window.callPhantom() failed');
+			}
 		}
 		catch(err){
 			return {error:err}
 		}
 	}
 };
+window.imager_tools = new window.imager_tools();

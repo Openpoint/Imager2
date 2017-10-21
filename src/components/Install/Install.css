@@ -1,0 +1,30 @@
+#wrapper{
+	width:800px;
+	padding:40px;
+	margin:40px auto;
+	background:white;
+	display:flex;
+	flex-direction:column;
+}
+#wrapper form{
+	display:flex;
+	flex-direction:column;
+}
+#wrapper form > *{
+	margin:10px 0;
+}
+#wrapper label{
+	margin-bottom:0;
+	font-size:.85em;
+	opacity:.75
+}
+#wrapper .submit{
+	margin-top:20px;
+	width:100px;
+	cursor:pointer
+}
+#wrapper p.error{
+	background:red;
+	color:white;
+	padding:10px;
+}

@@ -1,0 +1,15 @@
+{
+	"version": "0.0.0-dev",
+	"install": {
+		"installed": true,
+		"couchport": 5984,
+		"dbname": "imager",
+		"protocol": "http",
+		"host": "localhost"
+	},
+	"user": {
+		"username": "michaeladmin",
+		"password": "Me1th0b0b",
+		"email": "michael@openpoint.ie"
+	}
+}

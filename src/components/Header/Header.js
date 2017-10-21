@@ -1,7 +1,6 @@
 import React, {Component} from 'react';
 import {Link} from 'react-router-dom';
 import {Logo} from '../Logo.js';
-import tools from '../../modules/tools.js';
 import FontAwesome from 'react-fontawesome';
 import './Header.css';
 
@@ -10,30 +9,48 @@ export class Titlebar extends Component {
 		super(props);
 		this.state={open:false};
 		this.menu = this.menu.bind(this);
-
+		this.G = this.props.Global;
+		this.state = {
+			loggedin:this.G('state').loggedin,
+			install:this.G('state').install
+		}
 	}
 	menu(){
 		this.setState({
 			open:this.state.open?false:true
 		})
 	}
-	componentDidMount(){
-		this.props.functions.App.menheight(this.men.offsetHeight);
+	componentWillReceiveProps(nextProps,nextState){
+		this.setState({
+			loggedin:this.G('state').loggedin,
+			install:this.G('state').install
+		})
 	}
-	render(){
-		var functions = this.props.functions;
-		var states = this.props.states;
-		functions.Titlebar = tools.getFunctions(this);
-		states.Titlebar = this.state;
+
+	shouldComponentUpdate(nextProps,nextState){
+
 		return(
-			<div className='top' id='menu' ref={(men)=>this.men=men}>
+			nextState.install !== this.state.install ||
+			nextState.loggedin !== this.state.loggedin ||
+			nextState.open!==this.state.open
+		)
+	}
+
+
+	render(){
+		//console.error('render the titlebar')
+
+		return(
+			<div className='top' id='menu' >
 				<Link to="/"><Logo /></Link>
-				<FontAwesome name='bars' size='lg' className='menu item' onClick={()=>{this.menu()}}></FontAwesome>
-				<menu className = {this.state.open?'open':'closed'}>
-					{!states.App.loggedin && <div onClick={()=>{functions.App.modal('login')}} className='mitem'>Log In</div>}
-					{states.App.loggedin && <div onClick={()=>{functions.App.auth(false)}} className='mitem'>Log Out</div>}
-					<div className='mitem'>Favourites</div>
-				</menu>
+				{!this.state.install && <FontAwesome name='bars' size='lg' className='menu item' onClick={()=>{this.menu()}}></FontAwesome>}
+				{!this.state.install && (
+					<menu className = {this.state.open?'open':'closed'}>
+						{!this.state.loggedin && <div onClick={()=>{this.G('modal')('login')}} className='mitem'>Log In</div>}
+						{this.state.loggedin && <div onClick={()=>{this.G('auth')(false)}} className='mitem'>Log Out</div>}
+						<div className='mitem'>Favourites</div>
+					</menu>
+				)}
 			</div>
 		)
 	}

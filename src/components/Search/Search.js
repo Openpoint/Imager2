@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
 import {Link} from 'react-router-dom';
 import {Tooltip} from '../Tooltip/Tooltip.js';
 import {Logo} from '../Logo.js';
@@ -14,7 +13,7 @@ const placeholders = {
 		message:'Search for images on FLICKR',
 		parse:function(val){
 			if(val.indexOf('http')===0) return false;
-			return 'https://www.flickr.com/search/?text='+val;
+			return 'https://www.flickr.com/search/?text='+val+'&dimension_search_mode=min&height=1024&width=1024';
 		}
 	},
 	google:{
@@ -22,7 +21,7 @@ const placeholders = {
 		parse:function(val){
 			if(val.indexOf('http')===0) return false;
 			val = val.split(' ').join('+');
-			return 'https://www.google.com/search?tbm=isch&source=hp&q='+val;
+			return 'https://www.google.com/search?tbm=isch&source=hp&tbs=isz:l&q='+val;
 		}
 	},
 	getty:{
@@ -36,14 +35,16 @@ const placeholders = {
 	link:{
 		message:'Enter URL or search',
 		parse:function(val){
-			return val;
+			return decodeURI(val);
 		}
 	}
 }
 
 export class Search extends Component {
-	constructor(props,context){
-		super(props,context);
+	constructor(props){
+		super(props);
+		this.G = this.props.Global;
+
 		this.handleChange = this.handleChange.bind(this);
 		this.handleSubmit = this.handleSubmit.bind(this);
 		this.setsearch = this.setsearch.bind(this);
@@ -55,7 +56,7 @@ export class Search extends Component {
 		})
 	}
 	fixsearch(menheight){
-		if(!menheight) menheight = this.props.states.App.menheight;
+		if(!menheight) menheight = this.menheight;
 		if(window.scrollY > menheight){
 			if(!this.menupeg){
 				this.menupeg = true;
@@ -79,6 +80,8 @@ export class Search extends Component {
 	}
 	handleSubmit(event){
 		event.preventDefault();
+		this.setState({value:''});
+
 		var url = placeholders[this.state.type].parse(this.state.value);
 		if(!url){
 			url = placeholders.link.parse(this.state.value);
@@ -95,19 +98,23 @@ export class Search extends Component {
 				type:'google'
 			})
 		}
-		this.props.functions.App.newpage(newpage);
-		this.setState({value:''});
+		//console.error(newpage);
+		this.G("newpage",newpage);
+		this.G("history").push('/page/'+newpage.id);
+
 	}
-	componentWillReceiveProps(props){
-		var menheight = props.states.App.menheight
-		if(window.scrollY > menheight){
+
+	componentDidMount(){
+		this.menheight = document.getElementById('menu').offsetHeight;
+		if(window.scrollY > this.menheight){
 			this.menupeg = false;
 		}else{
 			this.menupeg = true;
 		}
-		this.fixsearch(menheight);
+		this.fixsearch(this.menheight);
 	}
 	render(){
+
 		return(
 			<div id='search' className={this.state.menupeg?'sticky':'free'}>
 			<form onSubmit={this.handleSubmit} ref={(search)=>this.search=search}>
@@ -136,7 +143,3 @@ export class Search extends Component {
 		)
 	}
 }
-
-Search.contextTypes = {
-  router: PropTypes.object
-};

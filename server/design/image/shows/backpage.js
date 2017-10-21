@@ -9,13 +9,14 @@ function(doc, req) {
 				return 0;
 			})
 		}
+		/*
 		var deleted;
 		if(req.query) req.query.deleted==='false'?deleted = false:deleted = true;
 		doc.images = doc.images.filter(function(img){
 			if(!deleted) return !img.deleted;
 			return img.deleted;
 		})
-
+		*/
 		var types = {big:[],small:[]}
 		doc.images.forEach(function(image){
 			if(image.width > 450 && image.height > 450){

@@ -2,6 +2,7 @@
 
 const phantom = require('phantom');
 const jq = require.resolve('jquery');
+const bb = require.resolve('bluebird').replace('release/bluebird.js','browser/bluebird.min.js');
 const tools = require.resolve('./scrapetools.js');
 const fs = require('fs');
 const {URL} = require('url');
@@ -10,11 +11,11 @@ const {URL} = require('url');
 var scraper = function(app){
 	app.get('/scrape',function (req,res) {
 		var dest = decodeURIComponent(req.query.url);
-		phantom.create(['--load-images=no']).then(function(browser){
+		phantom.create().then(function(browser){
 			scrape(dest,browser).then(function(data){
 				res.send(data);
 			},function(err){
-				console.log(err);
+				console.error('Error: '+err);
 				res.send(err);
 			})
 		})
@@ -29,9 +30,6 @@ function examine(res,url){
 		return (r.src && seen.hasOwnProperty(r.src)) ? false: (seen[r.src]  = true);
 	})
 	res.images.map(function(im){
-		if(im.src.indexOf('url(')===0){
-			im.src = im.src.slice(0, -1).replace('url(','').trim();
-		}
 		im.date = Date.now();
 		return im;
 	})
@@ -46,71 +44,79 @@ function examine(res,url){
 	return res;
 }
 
-function sleep(ms){
-	return new Promise(function(resolve,reject){
-		setTimeout(function(){
-			resolve(true);
-		},ms)
-	})
-}
-
 function scrape(url,browser){
-	console.log(url);
+	var site = new URL(url).hostname;
+	site = site.split('.');
+	site = site[site.length-2];
+
 	return new Promise(async function(resolve,reject){
 		try{
 			var page = await browser.createPage();
-			page.property('onConsoleMessage',function(msg, lineNum, sourceId) {
-				console.log('CONSOLE: ' + msg + ' (from line #' + lineNum + ' in "' + sourceId + '")');
+			page.on('onConsoleMessage',function(msg) {
+				console.log('CONSOLE: ' + msg);
+			});
+			page.on('onCallback',function(data) {
+				resolve(examine(data,url));
+				page.close().then(function(){
+					console.log('page closed')
+					browser.exit().then(function(){
+						console.log('browser exit')
+					});
+				})
+				/*
+				page.property('content').then(function(html){
+					fs.writeFileSync('test.html', html);
+					browser.exit();
+				},function(err){
+					console.log(err);
+				});
+				*/
+			},function(err){
+				console.error('Error: '+err);
+			});
+			page.on('onInitialized',function(){
+				page.injectJs(bb);
+				page.injectJs(tools);
+			});
+			page.on('onLoadFinished',function(){
+				page.evaluate(function(){
+					return window.jquery?true:false
+				}).then(function(jquery){
+					if(!jquery){
+						page.injectJs(jq).then(function(){
+							page.evaluate(function(site){
+								try{
+									jQuery.noConflict();
+									imager_tools.scrape(site);
+								}
+								catch(err){
+									console.err(err)
+								}
+							},site)
+						});
+					}else{
+						page.evaluate(function(site){
+							try{
+								imager_tools.scrape(site);
+							}
+							catch(err){
+								console.err(err)
+							}
+						},site)
+					}
+				});
 			});
 			await page.property('viewportSize', {
-				width: 1800,
-				height: 20000
+				width: 1920,
+				height: 1080
 			});
 			await page.setting('userAgent','Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.120 Safari/537.36');
-			await page.open(url);
-			await page.onLoadFinished;
-
-			await sleep(1000);
-			//await page.render('/home/michaeladmin/test.jpeg');
-			await page.injectJs(tools);
-			var result = await page.evaluate(function(){
-				var foo = [];
-				if(typeof window.jQuery === 'undefined'){
-					return false;
-				}else{
-					return imager_tools.scrape();
-				}
-			});
-
-			if(result){
-				proceed(result,url,resolve);
-
-			}else{
-				console.log('No Jquery')
-				await page.injectJs(jq);
-				//await page.onLoadFinished;
-				result = await page.evaluate(function(){
-					return imager_tools.scrape();
-				})
-				if(result){
-					proceed(result,url,resolve);
-				}else{
-					reject('no result')
-				}
-			}
-
-			var html = await page.property('content');
-			fs.writeFileSync('test.html', html);
-			browser.exit();
+			page.open(url);
 
 		} catch(err){
 			reject(err);
 		}
 	})
 }
-function proceed(result,url,resolve){
-	//console.log(result.frames);
-	//todo: recurse into iframe embeds
-	resolve(examine(result,url));
-}
+
 module.exports = scraper;

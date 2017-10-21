@@ -1,287 +1,60 @@
 import React, { Component } from 'react';
-import {Link} from 'react-router-dom';
-import PropTypes from 'prop-types';
-import {XMasonry,XBlock} from "react-xmasonry/dist/index.js"
+import {ImageList} from './ImageList.js';
 import FontAwesome from 'react-fontawesome';
 import {Tooltip} from '../Tooltip/Tooltip.js';
 import {Slider} from '../Slider/Slider.js';
 import SCRAPE from '../../modules/scrape.js';
+import {LoadImages} from './LoadImages.js';
 import crud from '../../modules/crud.js';
 import tools from '../../modules/tools.js';
 import './Wall.css';
 const scraper = new SCRAPE(process.env.PUBLIC_URL,process.env.API_PORT);
 
-class Image extends Component {
-	constructor(props){
-		super(props);
-		this.reverse = this.reverse.bind(this);
-		this.state = {loaded:false};
-	}
-
-	reverse(event,url){
-		if(event) event.stopPropagation();
-		tools.getDataUri(url)
-	}
-	componentDidMount(){
-		if(this.image) this.image.onload = ()=>{
-			if(this.canvas){
-				var h = this.ifront.clientHeight;
-				var w = this.ifront.clientWidth;
-				this.canvas.width = w;
-				this.canvas.height=h;
-				var ctx = this.canvas.getContext('2d');
-				ctx.drawImage(this.image,0,0,w,h);
-			}
-			if(this.image) this.setState({loaded:true})
-		};
-		if(this.favicon){
-			this.favicon.style.opacity = 0;
-			this.favicon.onload = ()=>{
-				this.favicon.style.opacity = 1;
-			}
-			/*
-			this.favicon.onerror = ()=>{
-				if(this.favicon) this.favicon.style.display = 'none';
-			}
-			*/
-		}
-	}
-	render(){
-		var image = this.props.image;
-		var functions = this.props.functions;
-		var states = this.props.states;
-
-		if(!this.image){
-			this.image = document.createElement('img');
-			this.image.src = image.src;
-		}
-		//<img src={image.src} alt = {image.alt} ref = {(image)=>this.image=image}/>
-		if(states.App.context === 'front'){
-			return(
-				<Link to={"/page/"+image.parent} className={[this.state.loaded?'loaded':'loading','image','ttParent'].join(' ')} >
-					{image.favicon && <div className='favicon ttParent'>
-						<img src={image.favicon} alt = 'favicon' ref={(favicon)=>this.favicon=favicon}/>
-						<Tooltip message = {tools.sitename(image.parenturl)} position = 'top' />
-					</div>}
-					<div className='iback group'>
-						<div className='spacer' style={{height:0,marginTop:100/image.ratio+'%'}}></div>
-					</div>
-					<div className='ifront' ref={(ifront)=>this.ifront = ifront}>
-						{tools.filetype(image.src)!=='gif' && <canvas ref={(canvas)=>this.canvas = canvas}></canvas>}
-						{tools.filetype(image.src)==='gif' && <img src = {image.src} alt = {image.alt} />}
-					</div>
-					<Tooltip message = {tools.decode(image.info).substring(0,200)+'...'} position = 'bottom' />
-				</Link>
-			)
-		}else{
-			return(
-				<div className={[this.state.loaded?'loaded':'loading','image','ttParent',image.class].join(' ')} onClick = {()=>{functions.Wall.slideshow(this.props.index)}}>
-
-					<div className='iback group'>
-						<div className='spacer' style={{height:0,marginTop:100/image.ratio+'%'}}></div>
-					</div>
-
-					<div className='ifront' ref={(ifront)=>this.ifront = ifront}>
-						{tools.filetype(image.src)!=='gif' && <canvas ref={(canvas)=>this.canvas = canvas}></canvas>}
-						{tools.filetype(image.src)==='gif' && <img src = {image.src} alt = {image.alt} />}
-					</div>
-					<div className  = 'controls'>
-						{image.src.indexOf('data:')!==0 && <div className='control ttParent' onClick={(event)=>{this.reverse(event,image.src)}} >
-							<FontAwesome name='google' />
-							<Tooltip message = 'Reverse image lookup' position='top' />
-						</div>}
-
-						{!image.front && !image.deleted && states.App.loggedin && (
-							<div className='control ttParent' onClick={(event)=>{functions.ImageList.toFront(event,this.props.index)}}  >
-								<FontAwesome name='paperclip' />
-								<Tooltip message = 'Set as Front Image'  position='top' />
-							</div>
-						)}
-						<div className='control ttParent' onClick={(event)=>{functions.ImageList.delete(event,this.props.index)}} >
-							<a href={image.src} download target='_blank'><FontAwesome name='download' /></a>
-							<Tooltip message = 'Download Image' position='top' />
-						</div>
-						{states.App.loggedin && (
-							<div className='control ttParent' onClick={(event)=>{functions.ImageList.delete(event,this.props.index,this)}} >
-								<FontAwesome name={image.deleted?'check':'times'} />
-								<Tooltip message = {image.deleted?'Restore Image':'Delete Image'} position='top' />
-							</div>
-						)}
-					</div>
-					{image.alt && <Tooltip message = {tools.decode(image.alt)} position = 'bottom' />}
-				</div>
-			)
-		}
-	}
-}
-
-
-var max =40;
-
-export class ImageList extends Component {
-	constructor(props){
-		super(props);
-		this.delete = this.delete.bind(this);
-		this.toFront = this.toFront.bind(this);
-		this.lazyload = this.lazyload.bind(this);
-		this.getImages = this.getImages.bind(this);
-		this.max = max;
-		window.addEventListener('scroll',this.lazyload);
-		this.functions = this.props.functions;
-		this.states = this.props.states;
-		this.functions.ImageList = tools.getFunctions(this);
-		this.state = {images:[],max:max};
-	}
-
-	delete(event,index){
-		if(event) event.stopPropagation();
-		var images = this.props.states.Wall.images;
-		var id = this.props.states.Wall.id;
-		var self = this;
-		crud.update('image','delete-single',id,{imageid:images[index].index}).then(function(data){
-			if(data.auth){
-				images.splice(index,1);
-				//self.props.functions.Wall.refreshImages(images);
-				self.getImages(images,true)
-			}
-		},function(err){
-			console.error(err);
-		});
-	}
-	toFront(event,index){
-		if(event) event.stopPropagation();
-		var images = this.props.states.Wall.images;
-		var id = this.props.states.Wall.id;
-		var self = this;
-		crud.update('image','to-front',id,{imageid:images[index].index}).then(function(data){
-			if(data.auth){
-				images = images.map(function(im){
-					im.front = false;
-					return im;
-				})
-				images[index].front = true;
-				//self.props.functions.Wall.refreshImages(images);
-				self.getImages(images,true)
-			}
-		},function(err){
-			console.error(err);
-		});
-	}
-	lazyload(){
-
-		var alldone = (this.max >= this.states.Wall.images.length);
-		console.error(alldone)
-		if(alldone || this.lazytime || this.busy) return;
-		var self = this;
-		this.lazytime=setTimeout(function(){
-			var height = window.innerHeight;
-			var top = self.lazy.getBoundingClientRect().top-(height/2);
-			var visible = (top < height);
-			if(visible){
-				self.getImages(self.states.Wall.images);
-			}
-			self.lazytime = false;
-		},500);
-	}
-	getImages(images,added){
-		this.busy = true;
-		var self = this;
-		var spinner;
-		this.max = this.state.max;
-		(this.state.max < images.length)?spinner=true:spinner=false;
-		console.error('spinner: '+spinner)
-		if(added){
-			images = images.slice(0,this.state.max);
-			images = images.map(function(image,index){
-				var w = tools.getClass(image);
-				return <XBlock key={image.index} width={w}><Image image = {image} index = {index} functions = {self.functions} states = {self.states} /></XBlock>
-			})
-		}else{
-			var l = this.state.images.length;
-			images = images.slice(l,this.state.max);
-			images = images.map(function(image,index){
-				var w = tools.getClass(image);
-				return <XBlock key={image.index} width={w}><Image image = {image} index = {l+index} functions = {self.functions} states = {self.states} /></XBlock>
-			})
-			images = this.state.images.concat(images);
-		}
-
-		var m;
-		(added || !spinner)?m = this.state.max:m = this.state.max+max;
-
-		this.setState({
-			images:images,
-			max:m,
-			spinner:spinner
-		},function(){
-			self.busy = false;
-		})
-	}
-	componentDidMount() {
-		this.getImages(this.props.states.Wall.images);
-   }
-	componentWillUnmount(){
-		window.removeEventListener('scroll',this.lazyload);
-	}
-
-	componentWillReceiveProps(nextProps){
-		var o = this.state.images[0]?this.state.images[0].key.toString():false;
-		var n = nextProps.states.Wall.images[0].index.toString();
-		if(o && o !== n){
-			this.getImages(nextProps.states.Wall.images,true);
-		};
-	}
-
-	shouldComponentUpdate(nextProps, nextState){
-
-		return this.props.slideshow === nextProps.slideshow;
-	}
-	render(){
-		var style = window.getComputedStyle(document.getElementById("wall"), null);
-		var w = (Math.floor(style.width.replace('px','')*1/40));
-		return(
-			<div>
-				<div id = 'imagesizer' ref = {(imagesizer)=>this.imagesizer = imagesizer} ></div>
-				<XMasonry targetBlockWidth = {w} updateOnImagesLoad = 'false'>
-					{this.state.images}
-				</XMasonry>
-				<div id='lazy' ref={(lazy)=>this.lazy=lazy}>{this.state.spinner && <FontAwesome name='spinner' spin size='2x' className='inner' />}</div>
-			</div>
-		)
-	}
-}
-
 
 export class Wall extends Component {
-	constructor(props,context){
-		super(props,context);
-		this.slideshow = this.slideshow.bind(this);
+	constructor(props){
+		super(props);
+
+		this.G = this.props.Global;
 		this.update = this.update.bind(this);
 		this.renew = this.renew.bind(this);
 		this.wall = this.wall.bind(this);
 		this.home = this.home.bind(this);
-		this.refreshImages = this.refreshImages.bind(this);
+		this.recieve = this.recieve.bind(this);
+		this.G("send",this.recieve)
+		this.clear = this.clear.bind(this);
+		this.remove = this.remove.bind(this);
 		this.state = {
 			slideshow:false,
-			index:false,
 			id:this.props.id,
-			images:[],
-			newpage:false
+			page:{images:[]},
+			loggedin:this.G('state').loggedin,
+			isloading:this.G('state').isloading
 		};
-
+		this.p={};
 	}
 
+	remove(){
+		this.G('tempdeleted',true);
+		this.G('history').push('/');
+	}
 	update(props){
-		if(!props) props = this.props
+		if(!props) props = this.props;
+		this.clear()
+
 		this.setState({
 			id:props.id,
 			scrapemessage:false,
+			description:false,
+			title:false,
+			link:false,
+			refresh:false,
 		});
-		var states = props.states
-		var functions = props.functions;
+
 		var self = this;
-		if(states.App.context === 'front'){
-			crud.read('view','image','frontpage',{descending:true}).then(function(data){
+		if(this.G('state').Context === 'front'){
+			this.p.front = crud.read('view','image','frontpage',{descending:true}).then(function(data){
+				console.log('got front')
 				var images = data.rows.map(function(img){
 					return img.value;
 				})
@@ -291,12 +64,14 @@ export class Wall extends Component {
 			})
 			return;
 		}
-
-		if(props.newpage){
-			this.renew(props.newpage.query,props.newpage.id,true);
-			functions.App.newpage(false);
+		var newpage = this.G('newpage')
+		if(newpage){
+			this.renew(newpage.query,newpage.id,true);
+			this.G('newpage',false);
 		}else{
-			crud.read('show','image','backpage/'+props.id,{deleted:false}).then(function(page){
+			this.p.back = crud.read('show','image','backpage/'+props.id,{deleted:false}).then(function(page){
+				console.log('got page')
+				self.G('allims',page.images);
 				self.wall(page);
 			},function(err){
 				console.error(err);
@@ -304,152 +79,208 @@ export class Wall extends Component {
 		}
 	}
 	renew(query,id,added){
-
-		if(!added && this.state.refresh) return;
+		if((!added && this.state.refresh)||!query) return; //stop incessant user behaviour on the refresh button
+		if(!added) this.G('pageupdate',true);
 		this.setState({
 			refresh:true,
+			scrapemessage:'Scraping '+tools.sitename(query)+' for images...'
 		})
 		var self = this;
-		if(added && query){
-			this.setState({
-				scrapemessage:'Scraping '+tools.sitename(query)+' for images...'
-			});
-		}
-
-		scraper.scrape(query,id).then(function(parse){
-			parse.process = parse.process.bind(self)
-			parse.process(parse.json).then(function(page){
-				crud.create(page.id,page).then(function(data){
-					data.images = data.images.filter(function(img){
-						return !img.deleted
-					})
-					if(added) self.props.functions.App.getPageList();
-					data.images = tools.imageSort(data.images,'page');
-					/*
-					var moreimages = false
-					if(self.state.images.length && data.id.toString()===self.state.id.toString()){
-						console.log(data.images[0].index,self.state.images[0].index)
-						if(data.images[0].index !== self.state.images[0].index){
-							moreimages = true;
-						}
-					}
-					*/
-					self.wall(data);
-				});
-			},function(err){
-				console.error(err);
+		this.p.scrape = scraper.scrape(query,id).then(function(data){
+			if(data.images && data.images.length){
+				self.G('loadimages',data);
 				self.setState({
-					scrapemessage:'There was an error while scraping the page...',
-					refresh:false
+					scrapemessage:'Checking '+data.images.length+' images...'
+				})
+			}else{
+				self.G('loadimages',false);
+				self.setState({
+					scrapemessage:'No useable images were found on '+tools.sitename(query),
+					refresh:false,
 				});
-				if(added) setTimeout(function(){
-					self.wall(false);
-					if(self.context.router.history.length){
-						self.context.router.history.goBack();
-					}else{
-						self.context.router.history.push('/');
-					}
-				},2000)
-			})
-
+			}
+		},function(err){
+			console.error(err);
+			self.setState({
+				scrapemessage:'There was an error while scraping the page...',
+				refresh:false,
+			});
+			if(added) self.redirect = setTimeout(function(){
+				self.wall(false);
+				if(self.G('history').length){
+					self.G('history').goBack();
+				}else{
+					self.G('history').push('/');
+				}
+			},2000)
 		});
 	}
-	slideshow(index){
-		if(this.state.slideshow){
+	recieve(page){
+		if(typeof page.message !=='undefined'){
+			var message,refresh;
+			typeof page.message === 'string'?message = page.message:message = 'Checking '+page.message+' images...';
+			typeof page.message === 'string'?refresh = false:refresh = true;
 			this.setState({
-				slideshow:false
+				scrapemessage:message,
+				refresh:refresh,
 			})
 			return;
-		}else{
-			this.setState({
-				slideshow:true,
-				index:index
-			})
 		}
+		this.G('loadimages',false)
+		if(!this.G('allims')){
+			this.G('allims',page.images);
+		}else{
+			var allims = this.G('allims');
+			allims = allims.concat(page.images);
+			this.G('allims',allims);
+		}
+		if(this.G('page').images) page.images = page.images.concat(this.G('page').images)
+		page.images = tools.imageSort(page.images,'page');
+		this.wall(page);
 	}
+
 	wall(page){
+		if(!page.images || !page.images.length){
+			this.G('page',false);
+			this.setState({
+				description:tools.decode(page.description),
+				title:tools.decode(page.title),
+				link:page.link,
+				refresh:false,
+				scrapemessage:"No images were found for the page",
+				nogood:true
+			});
+			this.G('isloading')(true);
+			return;
+		}
+		page.images = page.images.filter(function(im){
+			return !im.deleted;
+		})
+		this.G('page',page);
 		this.setState({
-			images:page.images,
 			description:tools.decode(page.description),
 			title:tools.decode(page.title),
 			link:page.link,
 			refresh:false,
-			newpage:false
+			scrapemessage:false,
+			nogood:false
 		});
-		this.props.functions.App.isloading(false);
+		this.G('isloading')(false);
 	}
+
 	home(images){
+		this.G('page',{
+			images:tools.imageSort(images,'front')||[],
+		});
 		this.setState({
-			images:tools.imageSort(images,'front'),
 			refresh:false,
-			newpage:false
+			scrapemessage:false,
+			nogood:false
 		})
-		this.props.functions.App.isloading(false);
+		this.G('isloading')(false);
 	}
-	refreshImages(images){
-		this.setState({
-			images:images,
-		})
+	clear(){
+
+		this.G('loadimages',false);
+		this.G('allims',false);
+		clearTimeout(this.redirect);
+		tools.cancel(this.p);
 	}
 	componentDidMount(){
 		this.update();
 	}
-	componentWillReceiveProps(Next){
-		if(Next.id!==this.props.id || Next.newpage){
-			this.update(Next);
-			return;
+	componentWillUnmount(){
+		this.G('pageupdate',false);
+		this.clear();
+	}
+	componentWillReceiveProps(nextProps){
+		this.setState({
+			loggedin:this.G('state').loggedin,
+			isloading:this.G('state').isloading,
+			id:nextProps.id
+		})
+		if(nextProps.id!==this.props.id || this.G('newpage') || nextProps.reload){
+			this.clear();
+			this.update(nextProps);
 		}
 	}
 
+	shouldComponentUpdate(nextProps,nextState){
+		return(
+			nextProps.id!==this.props.id ||
+			nextProps.reload ||
+			this.state.isloading !== nextState.isloading ||
+			this.state.scrapemessage !== nextState.scrapemessage ||
+			this.state.loggedin !== nextState.loggedin
+		)
+	}
+
 	render(){
-
-		var functions = this.props.functions;
-		var states = this.props.states;
-		functions.Wall = tools.getFunctions(this);
-		states.Wall = this.state;
-
-		if(states.App.isloading) return(
+		//console.warn('Render the Wall: '+this.state.isloading);
+		if(this.state.isloading) return(
 			<div id='wall'>
+				{this.state.nogood && <div id='head'>
+					<div className = 'controls'>
+						<div className = 'control ttParent'>
+							<FontAwesome spin={this.state.refresh} size='lg' name='refresh' onClick = {()=>this.renew(this.state.link,this.state.id)} />
+							<Tooltip message = {this.state.scrapemessage||'Look for more images'} position='top' />
+						</div>
+						{(this.state.loggedin||this.state.page.temp) && (
+						<div className = 'control ttParent'>
+							{this.state.loggedin && !this.G('page').temp && <FontAwesome size='lg' name='trash-o' onClick = {()=>this.G('delete')(this.state.id)} />}
+							{this.G('page').temp && <FontAwesome size='lg' name='trash-o' onClick = {()=>this.remove()} />}
+							<Tooltip message = 'Delete Page' position='top' />
+						</div>
+						)}
+					</div>
+					<h2><a href={this.state.link} target='_blank'>{this.state.title||'Untitled'}</a></h2>
+					<p>{this.state.description}</p>
+				</div>}
 				<div className = 'progress'>
-					<FontAwesome spin size='5x' name='refresh' />
+					{!this.state.nogood && <FontAwesome spin size='5x' name='refresh' />}
+					{this.state.nogood && <FontAwesome size='5x' name='exclamation-triangle' />}
 					{this.state.scrapemessage && <div className='message'>{this.state.scrapemessage}</div>}
 				</div>
+				{this.G('loadimages') && <LoadImages Global = {this.G} />}
 			</div>
 		)
 
-		if(states.App.context === 'page'){
+		if(this.G('state').Context === 'page'){
 			return(
 				<div id='wall'>
+					{this.G('loadimages') && <LoadImages Global = {this.G}/>}
 					<div id='head'>
 						<div className = 'controls'>
+							{this.state.loggedin && <div className = 'control ttParent'>
+								<FontAwesome spin={this.state.refresh} size='lg' name='refresh' onClick = {()=>this.renew(this.state.link,this.state.id)} />
+								<Tooltip message = {this.state.scrapemessage||'Look for more images'} position='top' />
+							</div>}
+							{(this.state.loggedin||this.G('page').temp) && (
 							<div className = 'control ttParent'>
-								<FontAwesome spin={this.state.refresh} size='lg' name='refresh' onClick = {()=>functions.Wall.renew(states.Wall.link,states.Wall.id)} />
-								{!this.state.refresh && <Tooltip message = 'Look for more images' position='top' />}
-							</div>
-							{states.App.loggedin && (
-							<div className = 'control ttParent'>
-								<FontAwesome size='lg' name='trash-o' onClick = {()=>functions.App.delete(states.Wall.id)} />
+								{this.state.loggedin && (!this.G('page').temp || this.G('pageupdate')) && <FontAwesome size='lg' name='trash-o' onClick = {()=>this.G('delete')(this.state.id)} />}
+								{this.G('page').temp && !this.G('pageupdate') && <FontAwesome size='lg' name='trash-o' onClick = {()=>this.remove()} />}
 								<Tooltip message = 'Delete Page' position='top' />
 							</div>
 							)}
 						</div>
-						<h2><a href={states.Wall.link} target='_blank'>{states.Wall.title}</a></h2>
-						<p>{states.Wall.description}</p>
+						<h2><a href={this.state.link} target='_blank'>{this.state.title||'Untitled'}</a></h2>
+						<p>{this.state.description}</p>
 					</div>
-					<div className='page widgets'><ImageList functions = {functions} states = {states} slideshow = {this.state.slideshow} /></div>
-					<Slider functions = {functions} states = {states} />
+					<div className='page widgets'>
+						{this.G('page') && this.G('page').images.length && <ImageList Global = {this.G} />}
+					</div>
+					<Slider Global = {this.G}/>
 				</div>
 
 			)
 		}else{
 			return(
 				<div id = 'wall'>
-					<div className='front widgets'><ImageList  functions = {functions} states = {states} /></div>
+					<div className='front widgets'>
+						{this.G('page') && this.G('page').images.length && <ImageList Global = {this.G} />}
+					</div>
 				</div>
 			)
 		}
 	}
 }
-Wall.contextTypes = {
-  router: PropTypes.object
-};

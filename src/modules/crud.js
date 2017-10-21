@@ -1,6 +1,8 @@
 import 'whatwg-fetch';
 import Cookies from 'js-cookie';
 import tools from './tools.js';
+import Promise from "bluebird";
+Promise.config({cancellation:true});
 
 var crud = function(url,port){
 	this.init=true;
@@ -25,6 +27,7 @@ crud.prototype.logout = function(){
 }
 crud.prototype.login = function(doc){
 	this.method.method = 'GET';
+	delete this.method.body;
 	var req = this.url+'login';
 	Object.keys(doc).forEach(function(key,index){
 		var op;
@@ -47,9 +50,7 @@ crud.prototype.create = function(id,body){
 	this.method.body = JSON.stringify(body);
 	this.method.method = "PUT";
 	var req = this.url+id;
-	var self = this;
 	return send(req,this.method).then(function(data){
-		delete self.method.body;
 		return data;
 	})
 
@@ -57,6 +58,7 @@ crud.prototype.create = function(id,body){
 crud.prototype.read = function(query,doc,func,params){
 
 	this.method.method = 'GET';
+	delete this.method.body;
 	var req = this.url+'_design/'+doc+'/_'+query+'/'+func;
 	req = tools.querystring(req,params);
 	return send(req,this.method).then(function(data){
@@ -76,6 +78,7 @@ crud.prototype.update = function(doc,type,id,params){
 	return new Promise(function(resolve,reject){
 		var go = function(){
 			self.method.method = 'PUT';
+			delete self.method.body;
 			var req2 = req+op+'token='+self.token;
 			send(req2,self.method).then(function(data){
 				return self.auth(data.auth).then(function(isauth){
@@ -100,6 +103,7 @@ crud.prototype.delete = function(id){
 	return new Promise(function(resolve,reject){
 		var go = function(){
 			self.method.method = 'DELETE';
+			delete self.method.body;
 			var req = self.url+id+'?token='+self.token;
 			send(req,self.method).then(function(data){
 				return self.auth(data.auth).then(function(isauth){
@@ -119,12 +123,16 @@ crud.prototype.delete = function(id){
 		go();
 	})
 }
-crud.prototype.checkToken = function(token){
-	if(!token) token = this.token;
+crud.prototype.checkToken = function(){
+	var token = this.token;
 	this.method.method = 'GET';
+	delete this.method.body;
 	var req = this.url+'verify?token='+token;
 	var self = this;
 	return send(req,this.method).then(function(data){
+		if(data.install){
+			return(data);
+		};
 		return self.auth(data.auth);
 	})
 }
@@ -153,7 +161,19 @@ crud.prototype.auth = function(data){
 	})
 
 }
+crud.prototype.install = function(install){
+	this.method.method = 'POST';
+	this.method.body = JSON.stringify(install);
+	var type = install.host?'install':'adminuser';
+	var req = this.url+type;
+	var self = this;
+	return send(req,this.method).then(function(data){
+		delete self.method.body;
+		return data;
+	});
+}
 function send(req,opt){
+
 	return new Promise(function(resolve,reject){
 		fetch(req,opt).then(function(response){
 			var type = response.headers.get("content-type");
