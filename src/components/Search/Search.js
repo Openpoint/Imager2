@@ -13,7 +13,7 @@ const placeholders = {
 		message:'Search for images on FLICKR',
 		parse:function(val){
 			if(val.indexOf('http')===0) return false;
-			return 'https://www.flickr.com/search/?text='+val+'&dimension_search_mode=min&height=1024&width=1024';
+			return 'https://www.flickr.com/search/?text='+val+'&dimension_search_mode=min&height=1024&width=1024&media=photos';
 		}
 	},
 	google:{
@@ -24,14 +24,18 @@ const placeholders = {
 			return 'https://www.google.com/search?tbm=isch&source=hp&tbs=isz:l&q='+val;
 		}
 	},
-	getty:{
-		message:'Search Getty Images',
+
+	"500px":{
+		message:'Search 500px',
 		parse:function(val){
 			if(val.indexOf('http')===0) return false;
-			val = val.split(' ').join('-');
-			return 'https://www.gettyimages.com/photos/'+val;
+			console.error(val)
+			val = val.split(' ').join('+');
+			console.error(val)
+			return 'https://500px.com/search?q='+val+'&type=photos&sort=relevance'
 		}
 	},
+
 	link:{
 		message:'Enter URL or search',
 		parse:function(val){
@@ -49,15 +53,18 @@ export class Search extends Component {
 		this.handleSubmit = this.handleSubmit.bind(this);
 		this.setsearch = this.setsearch.bind(this);
 		this.fixsearch = this.fixsearch.bind(this);
-		this.state = {value:'',type:'link'};
+		this.state = {
+			value:'',
+			type:'link',
+			context:this.G('state').Context
+		};
 
-		window.addEventListener('scroll',()=>{
-			this.fixsearch()
-		})
+		window.addEventListener('scroll',this.fixsearch)
 	}
-	fixsearch(menheight){
-		if(!menheight) menheight = this.menheight;
-		if(window.scrollY > menheight){
+	fixsearch(){
+
+		if(window.scrollY > this.menheight){
+
 			if(!this.menupeg){
 				this.menupeg = true;
 				this.setState({menupeg:true})
@@ -103,7 +110,6 @@ export class Search extends Component {
 		this.G("history").push('/page/'+newpage.id);
 
 	}
-
 	componentDidMount(){
 		this.menheight = document.getElementById('menu').offsetHeight;
 		if(window.scrollY > this.menheight){
@@ -113,14 +119,20 @@ export class Search extends Component {
 		}
 		this.fixsearch(this.menheight);
 	}
+	componentWillUnmount(){
+		window.removeEventListener('scroll',this.fixsearch)
+	}
 	render(){
-
 		return(
 			<div id='search' className={this.state.menupeg?'sticky':'free'}>
 			<form onSubmit={this.handleSubmit} ref={(search)=>this.search=search}>
 				<input type='text' value={this.state.value} onChange = {this.handleChange} placeholder={placeholders[this.state.type].message} ref={(input)=>this.input=input}/>
 				<div className='controls'>
 					<div className='control'><Link to="/"><Logo /></Link></div>
+					<div className={['control ttParent',this.state.type==='500px'?'bold':''].join(' ')} >
+						<FontAwesome name='500px' onClick={(event)=>this.setsearch(event,'500px')} />
+						<Tooltip message='Search on 500px' position='bottom' />
+					</div>
 					<div className={['control ttParent',this.state.type==='flickr'?'bold':''].join(' ')} >
 						<FontAwesome name='flickr' onClick={(event)=>this.setsearch(event,'flickr')}/>
 						<Tooltip message='Search on FLICKR' position='bottom' />
@@ -129,10 +141,7 @@ export class Search extends Component {
 						<FontAwesome name='google'  onClick={(event)=>this.setsearch(event,'google')}/>
 						<Tooltip message='Search on Google' position='bottom'/>
 					</div>
-					<div className={['control ttParent',this.state.type==='getty'?'bold':''].join(' ')} >
-						<span onClick={(event)=>this.setsearch(event,'getty')}>Ge</span>
-						<Tooltip message='Search on Getty images' position='bottom' />
-					</div>
+
 					<div className={['control ttParent',this.state.type==='link'?'bold':''].join(' ')} >
 						<FontAwesome name='link' onClick={(event)=>this.setsearch(event,'link')} />
 						<Tooltip message='Enter an URL' position='bottom' />

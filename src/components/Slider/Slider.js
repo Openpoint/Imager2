@@ -24,7 +24,9 @@ export class Slider extends Component {
 			})
 			return;
 		}else{
-			this.images = this.G('page').images;
+			this.images = this.G('page').images.filter(function(im){
+				return !im.deleted;
+			});
 			this.setState({
 				slideshow:true,
 				index:index

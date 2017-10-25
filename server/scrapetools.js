@@ -23,24 +23,28 @@ window.imager_tools = function(){
 			}
 		}
 		if(this.isImage(href)) href = href.split('?')[0];
-		console.log(href)
 		return href;
 	},
 	this.scroll = function(wh,dir,oh,resolve,count){
+
 		var h;
 		var scroll;
-		var to = 2000;
+		var to = 1000;
 		switch(dir){
 			case 'y':
-				h = i$(document).outerHeight();
+				oh = i$(document).outerHeight();
+				h = i$(window).scrollTop()+wh
+
 			break;
 			case 'x':
-				h = i$(document).outerWidth();
+				oh = i$(document).outerWidth();
+				h = i$(window).scrollLeft()+wh
 			break
 		}
 
 		if(!resolve){
 			var init = true;
+			//to = 1000;
 			count = 0;
 			var p = new Promise(function(res,reject){
 				resolve = res;
@@ -48,16 +52,27 @@ window.imager_tools = function(){
 		}else{
 			count++
 		}
-		if(h <= wh||h===oh||count > 10){
+		console.log(count,dir,oh,h)
+		if((h >= oh || count > 30) && !init){
+			resolve(true);
+			return;
+		}
+		/*
+		//if(h <= wh||h===oh||count > 10){
+		if(h <= wh||h===oh){
 			if(init){
-				to = 0;
+				to = 1000;
 			}else{
 				resolve(true);
 				return;
 			}
 		}
-		dir==='y'?i$(window).scrollTop(h-wh):i$(window).scrollTop(h-wh);
+		*/
+		//dir==='y'?i$(window).scrollTop(h-wh):i$(window).scrollLeft(h-wh);
+		dir==='y'?i$(window).scrollTop(i$(window).scrollTop()+900):i$(window).scrollLeft(i$(window).scrollLeft()+900);
+
 		setTimeout(function(){
+			//console.log('awake:'+i$('.awake').length+' view:'+i$('.view').length)
 			self.scroll(wh,dir,h,resolve,count)
 		},to)
 		if(init) return p;
@@ -67,6 +82,8 @@ window.imager_tools = function(){
 		i$ = window.jQuery;
 		var self = this;
 		console.log("scraping")
+		this.title = i$('title').html();
+		this.description = i$('meta[name=description]').attr("content");
 		if(document.readyState === 'complete'){
 			if(!self.launched) go();
 		}else{
@@ -90,7 +107,7 @@ window.imager_tools = function(){
 				count++;
 				if(count === 2) self.ready();
 			});
-			self.scroll(wh,'x').then(function(){
+			self.scroll(ww,'x').then(function(){
 				console.log('at the right');
 				count++;
 				if(count === 2) self.ready();
@@ -99,7 +116,6 @@ window.imager_tools = function(){
 		return true;
 	},
 	this.mod = function(src){
-		console.log(src)
 		if(!src) return false;
 		if(src.indexOf('url(')===0){
 			src = src.slice(0, -1).replace('url(','').trim();
@@ -197,7 +213,7 @@ window.imager_tools = function(){
 			})
 			*/
 			if(!favicon && favicon2) favicon = favicon2;
-			var result =  {frames:frames,images:this.foo,title:i$('title').html(),description:i$('meta[name=description]').attr("content"),favicon:favicon};
+			var result =  {frames:frames,images:this.foo,title:this.title,description:this.description,favicon:favicon};
 			if (typeof window.callPhantom === 'function') {
 				window.callPhantom(result);
 			}else{

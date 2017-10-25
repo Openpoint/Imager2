@@ -11,8 +11,9 @@ const {URL} = require('url');
 var scraper = function(app){
 	app.get('/scrape',function (req,res) {
 		var dest = decodeURIComponent(req.query.url);
+		//phantom.create(['--load-images=no']).then(function(browser){
 		phantom.create().then(function(browser){
-			scrape(dest,browser).then(function(data){
+			new scrape(dest,browser).then(function(data){
 				res.send(data);
 			},function(err){
 				console.error('Error: '+err);
@@ -48,7 +49,8 @@ function scrape(url,browser){
 	var site = new URL(url).hostname;
 	site = site.split('.');
 	site = site[site.length-2];
-
+	console.log(site)
+	var self = this;
 	return new Promise(async function(resolve,reject){
 		try{
 			var page = await browser.createPage();
@@ -56,7 +58,12 @@ function scrape(url,browser){
 				console.log('CONSOLE: ' + msg);
 			});
 			page.on('onCallback',function(data) {
-				resolve(examine(data,url));
+				if(data!=='error'){
+					resolve(examine(data,url));
+				}else{
+					reject('error in scrape')
+				}
+
 				page.close().then(function(){
 					console.log('page closed')
 					browser.exit().then(function(){
@@ -79,6 +86,9 @@ function scrape(url,browser){
 				page.injectJs(tools);
 			});
 			page.on('onLoadFinished',function(){
+				if(self.init) return;
+				self.init = true;
+				console.log(site+' onLoadFinished')
 				page.evaluate(function(){
 					return window.jquery?true:false
 				}).then(function(jquery){
@@ -90,7 +100,8 @@ function scrape(url,browser){
 									imager_tools.scrape(site);
 								}
 								catch(err){
-									console.err(err)
+									console.error(err)
+									window.callPhantom('error');
 								}
 							},site)
 						});
@@ -100,7 +111,8 @@ function scrape(url,browser){
 								imager_tools.scrape(site);
 							}
 							catch(err){
-								console.err(err)
+								console.error(err)
+								window.callPhantom('error');
 							}
 						},site)
 					}

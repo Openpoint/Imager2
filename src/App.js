@@ -68,6 +68,7 @@ class App extends Component {
 			auth:this.auth,
 			delete:this.delete,
 			isloading:this.isloading,
+			queue:[]
 		};
 
 	}

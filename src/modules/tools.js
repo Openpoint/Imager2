@@ -1,4 +1,6 @@
-var tools=function(){};
+var tools=function(){
+	this.count = 0
+};
 
 tools.prototype.hash = function(str){
 	var hash = 0;
@@ -37,7 +39,7 @@ tools.prototype.imageSort = function(images,context){
 	//images = this.sort(images,'size','desc');
 	var types = {big:[],small:[]}
 	images.forEach(function(image){
-		if(image.width > 450 && image.height > 450){
+		if(image.size > 250000){
 			image.class='big';
 			types.big.push(image);
 		}else{
@@ -105,7 +107,29 @@ tools.prototype.filetype = function(file){
 	file = file[file.length-1];
 	return file.toLowerCase();
 }
-
+//get properties from image
+tools.prototype.imageInfo = function(image){
+	var blank = !image.src||image.src.split('/')[3] === 'blank.png';
+	return{
+		blank:blank,
+		height:image.naturalHeight,
+		width:image.naturalWidth,
+		complete:!blank && image.complete && image.naturalHeight > 1
+	}
+}
+//put an image to canvas
+tools.prototype.canvas = function(image){
+	this.count++
+	
+	var width = Math.round(document.getElementById('wall').offsetWidth/40*image.props.w);
+	var height = Math.round(width/image.props.image.ratio);
+	image.canvas.width = width;
+	image.canvas.height = height;
+	//var iwidth = image.props.image.width;
+	//var iheight = image.props.image.height;
+	image.ctx = image.canvas.getContext("2d");
+	image.ctx.drawImage(image.image,0,0,width,height);
+}
 //cancel pending promises (make sure the promise has been created with bluebird, not native Promise)
 tools.prototype.cancel = function(p){
 	Object.keys(p).forEach(function(key){

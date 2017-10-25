@@ -186,6 +186,17 @@ export class Wall extends Component {
 		clearTimeout(this.redirect);
 		tools.cancel(this.p);
 	}
+	componentDidUpdate(){
+		//console.error('wall updated',this.G('state').Context,this.state.isloading,this.G('frontscroll'))
+		if(this.G('state').Context === 'front' && !this.state.isloading && this.G('frontscroll')){
+			console.error(this.G('frontscroll'))
+			var self = this;
+			setTimeout(function(){
+				window.scrollTo(0,self.G('frontscroll'));
+			})
+
+		}
+	}
 	componentDidMount(){
 		this.update();
 	}
@@ -194,6 +205,7 @@ export class Wall extends Component {
 		this.clear();
 	}
 	componentWillReceiveProps(nextProps){
+
 		this.setState({
 			loggedin:this.G('state').loggedin,
 			isloading:this.G('state').isloading,
@@ -206,6 +218,7 @@ export class Wall extends Component {
 	}
 
 	shouldComponentUpdate(nextProps,nextState){
+
 		return(
 			nextProps.id!==this.props.id ||
 			nextProps.reload ||

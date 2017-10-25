@@ -19,7 +19,7 @@ function(doc, req) {
 		*/
 		var types = {big:[],small:[]}
 		doc.images.forEach(function(image){
-			if(image.width > 450 && image.height > 450){
+			if(image.size > 250000){
 				image.class='big';
 				types.big.push(image);
 			}else{
