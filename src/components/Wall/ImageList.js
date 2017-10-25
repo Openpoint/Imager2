@@ -29,12 +29,14 @@ export class ImageList extends Component {
 			trigger:false
 		};
 		this.p={};
-		this.timeouts = {};
+		this.timeouts = {
+			qpace:100
+		};
 		this.ims = {};
 		this.xblocks = {};
 		this.q = [];
 		this.q2 = {};
-		this.batch = 5;
+		this.batch = 10;
 		this.ready = false;
 		window.addEventListener('beforeunload',this.exit);
 		window.addEventListener('scroll',this.imload);
@@ -54,7 +56,7 @@ export class ImageList extends Component {
 			clearTimeout(self.timeouts.q)
 			self.timeouts.q = setTimeout(function(){
 				self.queue();
-			},1000)
+			},self.timeouts.qpace)
 
 			image.setState({
 				loaded:'loaded'
@@ -70,7 +72,7 @@ export class ImageList extends Component {
 			clearTimeout(self.timeouts.q)
 			self.timeouts.q = setTimeout(function(){
 				self.queue();
-			},1000)
+			},self.timeouts.qpace)
 			image.setState({
 				loaded:'error',
 				load:false
@@ -122,6 +124,7 @@ export class ImageList extends Component {
 		var height = window.innerHeight;
 		var st = window.scrollY-this.blocksize.top;
 		var blocks = this.xMasonry.state.blocks;
+		var q = false
 		Object.keys(blocks).forEach(function(key){
 			var block = blocks[key]
 			var top = block.top-st;
@@ -129,22 +132,26 @@ export class ImageList extends Component {
 			var image = self.ims[key];
 			var vis = (top >= 0-(block.height*2) && bottom <= height+(block.height*2))?true:false;
 			image.vis = vis;
-			if(vis && !image.state.vis && !self.q2[key].seen && !self.q2[key].gone){
-				self.q2[key].seen = true;
-				clearTimeout(self.timeouts.q)
-				self.queue(key);
+			if(vis && !image.state.vis && !self.q2[key].gone){
+				q=true;
+				self.q.unshift(key)
 			}
 			if(image.state.vis!==vis){
 				image.setState({vis:vis})
 			}
 		})
+		if(q){
+			clearTimeout(this.timeouts.q)
+			this.timeouts.q = setTimeout(function(){
+				self.queue();
+			},self.timeouts.qpace)
+
+		}
+
 	}
 	//handle the image rendering priority queue
-	queue(k){
+	queue(){
 		var self = this;
-		if(k){
-			this.q.unshift(k)
-		};
 		this.q=this.q.filter(function(key){
 			//console.log(self.ims[key].state.load,self.ims[key].state.loaded)
 			if(!self.q2[key].finished && !self.q2[key].gone){
@@ -156,7 +163,7 @@ export class ImageList extends Component {
 		var size = 0;
 		console.log(this.batch)
 		this.q.some(function(key,i){
-			var stop = !(i < (self.batch) && i < 5);
+			var stop = i > self.batch;
 			if(!stop){
 				size++
 				self.q2[key].gone = true;
