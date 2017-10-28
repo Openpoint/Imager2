@@ -38,13 +38,11 @@ export class Titlebar extends Component {
 
 
 	render(){
-		//console.error('render the titlebar')
-
 		return(
 			<div className='top' id='menu' >
 				<Link to="/"><Logo /></Link>
-				{!this.state.install && <FontAwesome name='bars' size='lg' className='menu item' onClick={()=>{this.menu()}}></FontAwesome>}
-				{!this.state.install && (
+				{this.state.install.installed && <FontAwesome name='bars' size='lg' className='menu item' onClick={()=>{this.menu()}}></FontAwesome>}
+				{this.state.install.installed && (
 					<menu className = {this.state.open?'open':'closed'}>
 						{!this.state.loggedin && <div onClick={()=>{this.G('modal')('login')}} className='mitem'>Log In</div>}
 						{this.state.loggedin && <div onClick={()=>{this.G('auth')(false)}} className='mitem'>Log Out</div>}

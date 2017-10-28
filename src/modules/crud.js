@@ -163,12 +163,11 @@ crud.prototype.auth = function(data){
 }
 crud.prototype.install = function(install){
 	this.method.method = 'POST';
+	delete this.method.body;
 	this.method.body = JSON.stringify(install);
 	var type = install.host?'install':'adminuser';
 	var req = this.url+type;
-	var self = this;
 	return send(req,this.method).then(function(data){
-		delete self.method.body;
 		return data;
 	});
 }

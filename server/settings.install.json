@@ -1,0 +1,15 @@
+{
+	"version": "",
+	"install": {
+		"installed": false,
+		"couchport": 5984,
+		"dbname": "",
+		"protocol": "http",
+		"host": "localhost"
+	},
+	"user": {
+		"username": "",
+		"password": "",
+		"email": ""
+	}
+}

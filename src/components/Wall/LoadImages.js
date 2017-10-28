@@ -6,6 +6,8 @@ export class LoadImages extends Component {
 		this.G = this.props.Global;
 		this.onload = this.onload.bind(this);
 		this.onerror = this.onerror.bind(this);
+		this.cancel = this.cancel.bind(this);
+		this.G('cancel',this.cancel);
 		this.ims={};
 		this.dupes={};
 		this.timeouts = {};
@@ -31,8 +33,9 @@ export class LoadImages extends Component {
 			}
 		}
 	}
-	onload(index){
-		console.log('onload:'+index);
+	onload(index,time){
+		if(this.stop) return;
+		console.log((time?'timedout:':'onload')+index);
 		if(this.ims[index].done) return;
 		this.ims[index].done = true;
 		this.fin++
@@ -57,8 +60,9 @@ export class LoadImages extends Component {
 			})
 		}
 	}
-	onerror(index){
-		console.error('error');
+	onerror(index,time){
+		if(this.stop) return;
+		console.error(time?'timedoud':'error');
 		if(this.ims[index].done) return;
 		this.ims[index].done = true;
 		this.fin++
@@ -70,7 +74,11 @@ export class LoadImages extends Component {
 			})
 		}
 	}
-
+	cancel(){
+		this.stop = true;
+		this.done();
+		this.G('send')(this.newpage);
+	}
 	done(){
 		this.newpage.temp=true;
 		var images = [];
@@ -96,6 +104,11 @@ export class LoadImages extends Component {
 	componentWillUnmount(){
 		console.log('scraper will unmount')
 		//delete this.ims;
+		this.stop = true;
+		var self = this;
+		Object.keys(this.timeouts).forEach(function(key){
+			clearTimeout(self.timeouts[key]);
+		})
 		delete this.newpage;
 		delete this.dupes;
 	}
@@ -108,9 +121,9 @@ export class LoadImages extends Component {
 						self.ims[im.index]={image:image,good:false,done:false,data:self.newpage.images[i]};
 						self.timeouts[im.index] = setTimeout(function(){
 							if(!image.height){
-								self.onerror(im.index);
+								self.onerror(im.index,true);
 							}else{
-								self.onload(im.index);
+								self.onload(im.index,true);
 							}
 						},2000)
 					}

@@ -24,7 +24,7 @@ export class Install extends Component {
 		var self = this;
 		if(event.target.name === 'install'){
 			crud.install(this.state.install).then(function(data){
-				//console.log(data);
+				console.log(data);
 				if(data.error){
 					self.setState({
 						error:data.reason==='missing'?'Database "'+self.state.install.dbname+'" exists, but is not a valid Imager database':data.reason

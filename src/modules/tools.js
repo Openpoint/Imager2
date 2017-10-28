@@ -1,6 +1,4 @@
-var tools=function(){
-	this.count = 0
-};
+var tools=function(){};
 
 tools.prototype.hash = function(str){
 	var hash = 0;
@@ -117,19 +115,7 @@ tools.prototype.imageInfo = function(image){
 		complete:!blank && image.complete && image.naturalHeight > 1
 	}
 }
-//put an image to canvas
-tools.prototype.canvas = function(image){
-	this.count++
-	
-	var width = Math.round(document.getElementById('wall').offsetWidth/40*image.props.w);
-	var height = Math.round(width/image.props.image.ratio);
-	image.canvas.width = width;
-	image.canvas.height = height;
-	//var iwidth = image.props.image.width;
-	//var iheight = image.props.image.height;
-	image.ctx = image.canvas.getContext("2d");
-	image.ctx.drawImage(image.image,0,0,width,height);
-}
+
 //cancel pending promises (make sure the promise has been created with bluebird, not native Promise)
 tools.prototype.cancel = function(p){
 	Object.keys(p).forEach(function(key){

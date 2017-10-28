@@ -8,6 +8,7 @@ export class ImageList extends Component {
 
 	constructor(props){
 		super(props);
+		var self = this;
 
 		this.G = this.props.Global;
 
@@ -18,6 +19,7 @@ export class ImageList extends Component {
 		this.imload = this.imload.bind(this);
 		this.lazygo = this.lazygo.bind(this);
 		this.queue = this.queue.bind(this);
+		this.canvas = this.canvas.bind(this);
 		//this.load= this.load.bind(this);
 		this.G('putim',this.putim);
 
@@ -38,21 +40,20 @@ export class ImageList extends Component {
 		this.q2 = {};
 		this.batch = 10;
 		this.ready = false;
+		this.count = 0;
 		window.addEventListener('beforeunload',this.exit);
 		window.addEventListener('scroll',this.imload);
 
 		this.images = this.G('page').images.filter(function(im){
 			return !im.deleted
 		})
-
-		var self = this;
 		this.G('imonload',function(image){
 			//console.warn(trigger,image.props.image.index)
 			clearTimeout(self.timeouts[image.props.image.index])
 			if(self.q2[image.props.image.index].finished) return;
 			self.q2[image.props.image.index].finished = true;
 			self.batch++;
-			tools.canvas(image);
+			self.canvas(image);
 			clearTimeout(self.timeouts.q)
 			self.timeouts.q = setTimeout(function(){
 				self.queue();
@@ -67,7 +68,6 @@ export class ImageList extends Component {
 			clearTimeout(self.timeouts[image.props.image.index])
 			if(self.q2[image.props.image.index].finished) return;
 			self.q2[image.props.image.index].finished = true;
-
 			self.batch++;
 			clearTimeout(self.timeouts.q)
 			self.timeouts.q = setTimeout(function(){
@@ -79,7 +79,19 @@ export class ImageList extends Component {
 			});
 		})
 	}
+	//put an image to canvas
+	canvas(image){
+		this.count++
 
+		var width = Math.round(document.getElementById('wall').offsetWidth/40*image.props.w);
+		var height = Math.round(width/image.props.image.ratio);
+		image.canvas.width = width;
+		image.canvas.height = height;
+		//var iwidth = image.props.image.width;
+		//var iheight = image.props.image.height;
+		image.ctx = image.canvas.getContext("2d");
+		image.ctx.drawImage(image.image,0,0,width,height);
+	}
 	//check for when masonary has finished the layout and knows all the elements sizes and positions,all images are ready to be loaded
 	blocks(){
 		var self = this;
@@ -100,7 +112,6 @@ export class ImageList extends Component {
 			this.q = this.q.sort(function(a,b){
 				return self.ims[a].props.index - self.ims[b].props.index
 			});
-			console.error(Object.keys(self.ims).length)
 			this.ready = true;
 			this.lazygo();
 		}
@@ -137,6 +148,7 @@ export class ImageList extends Component {
 				self.q.unshift(key)
 			}
 			if(image.state.vis!==vis){
+				self.q2[key].vis = vis;
 				image.setState({vis:vis})
 			}
 		})
@@ -160,19 +172,14 @@ export class ImageList extends Component {
 			return false;
 		})
 		if(!this.ready) return;
-		var size = 0;
-		console.log(this.batch)
+
+		//console.log(this.batch)
 		this.q.some(function(key,i){
 			var stop = i > self.batch;
 			if(!stop){
-				size++
+
 				self.q2[key].gone = true;
 				self.batch--
-				/*
-				self.timeouts[key] = setTimeout(function(){
-					self.G('imonerror')(self.ims[key])
-				},3000)
-				*/
 				self.ims[key].setState({load:true},function(){
 					if(self.ims[key].image && self.ims[key].image.complete) self.G('imonload')(self.ims[key]);
 				});
@@ -188,8 +195,9 @@ export class ImageList extends Component {
 	//save a new page
 	save(close){
 		window.removeEventListener('beforeunload',this.exit);
+		var page;
 		if(this.G('page').temp && !this.G('tempdeleted')){
-			var page = this.G('page');
+			page = this.G('page');
 			delete page.temp;
 			page.images = page.images.map(function(im){
 				delete im.class;
@@ -205,7 +213,8 @@ export class ImageList extends Component {
 			});
 			if(close) tools.sleep(100)
 		}
-		this.G('page',false);
+		page = null;
+		this.G('page',null);
 		this.G('tempdeleted',false);
 	}
 	deleteSingle(event,index){
@@ -279,6 +288,7 @@ export class ImageList extends Component {
 				return !im.deleted
 			})
 			this.images = tools.imageSort(this.images,'page');
+			this.blocks();
 		}else if(this.state.loggedin!==nextState.loggedin){
 			this.lazygo();
 		}

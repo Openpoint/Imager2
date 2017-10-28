@@ -54,7 +54,10 @@ class App extends Component {
 				self.modal('login','Your login expired, please log in again');
 			}
 			self.setState({
-				loggedin:valid
+				loggedin:valid,
+				install:{
+					installed:true
+				}
 			})
 
 		})
@@ -124,7 +127,7 @@ class App extends Component {
 			})
 		}
 	}
-	/*
+
 	shouldComponentUpdate(nextProps,nextState){
 		return(
 			nextState.reload ||
@@ -134,11 +137,11 @@ class App extends Component {
 			nextState.loggedin!==this.state.loggedin
 		)
 	}
-	*/
+
 	render() {
 		//console.log('Render the App: id:'+this.location.pathname+' loggedin:'+this.state.loggedin+' isloading:'+this.state.isloading)
-
-		if(!this.state.install) return (
+		if(!this.state.install) return <div></div>
+		if(this.state.install.installed) return (
 			<div id="App" className={[this.state.Context,this.state.isloading?'isloading':null].join(' ')}>
 				<div id='header'>
 					<Titlebar  Global = {this.Global} />

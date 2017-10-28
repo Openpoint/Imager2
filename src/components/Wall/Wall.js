@@ -54,7 +54,6 @@ export class Wall extends Component {
 		var self = this;
 		if(this.G('state').Context === 'front'){
 			this.p.front = crud.read('view','image','frontpage',{descending:true}).then(function(data){
-				console.log('got front')
 				var images = data.rows.map(function(img){
 					return img.value;
 				})
@@ -79,7 +78,10 @@ export class Wall extends Component {
 		}
 	}
 	renew(query,id,added){
-		if((!added && this.state.refresh)||!query) return; //stop incessant user behaviour on the refresh button
+		if((!added && this.state.refresh)||!query){//stop incessant user behaviour on the refresh button
+			this.G('cancel')();
+			return;
+		}
 		if(!added) this.G('pageupdate',true);
 		this.setState({
 			refresh:true,
@@ -134,7 +136,7 @@ export class Wall extends Component {
 			allims = allims.concat(page.images);
 			this.G('allims',allims);
 		}
-		if(this.G('page').images) page.images = page.images.concat(this.G('page').images)
+		if(this.G('page') && this.G('page').images) page.images = page.images.concat(this.G('page').images)
 		page.images = tools.imageSort(page.images,'page');
 		this.wall(page);
 	}
@@ -189,7 +191,6 @@ export class Wall extends Component {
 	componentDidUpdate(){
 		//console.error('wall updated',this.G('state').Context,this.state.isloading,this.G('frontscroll'))
 		if(this.G('state').Context === 'front' && !this.state.isloading && this.G('frontscroll')){
-			console.error(this.G('frontscroll'))
 			var self = this;
 			setTimeout(function(){
 				window.scrollTo(0,self.G('frontscroll'));
@@ -253,6 +254,7 @@ export class Wall extends Component {
 					{!this.state.nogood && <FontAwesome spin size='5x' name='refresh' />}
 					{this.state.nogood && <FontAwesome size='5x' name='exclamation-triangle' />}
 					{this.state.scrapemessage && <div className='message'>{this.state.scrapemessage}</div>}
+					<div onClick = {()=>this.G('cancel')()} >cancel</div>
 				</div>
 				{this.G('loadimages') && <LoadImages Global = {this.G} />}
 			</div>
