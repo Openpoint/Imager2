@@ -4,12 +4,12 @@
   "description": "Imager creates a lightweight, copyright safe, image library",
   "main": "index.js",
   "scripts": {
-    "imager": "node index.js production",
+    "imager": "node index.js",
     "imager-dev": "node index.js development",
-    "build": "node scripts/build.js",
+    "imager-build": "node index.js build",
     "test": "node scripts/test.js --env=jsdom"
   },
-  "homepage": "http://imager.openpoint",
+  "installdomain": "imager.buzz",
   "author": "Openpoint",
   "license": "GPL-3.0",
   "dependencies": {

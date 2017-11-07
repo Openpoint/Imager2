@@ -6,12 +6,15 @@ var cors = require('cors');
 const app = express();
 const child = require('child_process');
 const detect = require('detect-port-alt');
-const homepage = require('./package.json').homepage;
-
+const homepage = require('./package.json').installdomain;
+if(!homepage){
+	console.error("Please set the 'installdomain' value in 'package.json' at the root of your installation.");
+	return;
+}
 var corsOptions = {
   origin: function(origin,callback){
 	  //console.log(origin,homepage);
-	  (origin===homepage||process.argv[2]==='development')?callback(null, true):callback('Not allowed by CORS');
+	  (origin==='http://'+homepage||origin==='https://'+homepage||process.argv[2]==='development')?callback(null, true):callback('Not allowed by CORS');
   },
   credentials:true
 }
@@ -44,19 +47,19 @@ var Port = function(port){
 
 Port(3000).then(function(port){
 	process.env['SERVER_PORT'] = port;
-	app.listen(port, function () {
-		console.log('Imager API listening on port '+port+'!')
-	})
-	//console.log(process.argv)
+	if(process.argv[2]!=='build'){
+		app.listen(port, function () {
+			console.log('Imager API listening on port '+port+'!')
+		})
+	}
 	if(process.argv[2]==='development'){
 		Port(3000).then(function(port2){
-			const react = child.fork('scripts/start.js',['start'],{env:{PORT:port2,API_PORT:port}});
+			const react = child.fork('scripts/start.js',['start'],{env:{PORT:port2,API_PORT:port,_HOME:homepage}});
 		},function(err){
 			console.error(err)
 		})
-	}else{
-		console.log(process.argv[2])
-		const react = child.fork('scripts/build.js',{env:{API_PORT:port}});
+	}else if(process.argv[2]==='build'){
+		const react = child.fork('scripts/build.js',{env:{API_PORT:port,_HOME:homepage}});
 	}
 },function(err){
 	console.error(err)

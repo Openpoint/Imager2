@@ -6,8 +6,8 @@ Promise.config({cancellation:true});
 
 
 function scraper(url,port){
-	if(!url) url='http://localhost';
-	this.url = url+':'+port+'/scrape?url=';
+	if(!url) url='localhost';
+	this.url = window.location.protocol+'//'+url+':'+port+'/scrape?url=';
 }
 scraper.prototype.getpage = function(query){
 	if(query.indexOf('http')!==0) query = 'http://'+query;

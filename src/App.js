@@ -11,7 +11,9 @@ import {Install} from './components/Install/Install.js';
 import crud from './modules/crud.js';
 import tools from './modules/tools.js';
 
-crud.set(process.env.PUBLIC_URL,process.env.API_PORT)
+console.error(window.location);
+
+crud.set(process.env._HOME,process.env.API_PORT)
 
 const title = 'Imager';
 

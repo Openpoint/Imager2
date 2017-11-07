@@ -8,7 +8,7 @@ import {LoadImages} from './LoadImages.js';
 import crud from '../../modules/crud.js';
 import tools from '../../modules/tools.js';
 import './Wall.css';
-const scraper = new SCRAPE(process.env.PUBLIC_URL,process.env.API_PORT);
+const scraper = new SCRAPE(process.env._HOME,process.env.API_PORT);
 
 
 export class Wall extends Component {

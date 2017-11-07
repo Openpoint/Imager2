@@ -15,8 +15,9 @@ var crud = function(url,port){
 	this.token = Cookies.get('token');
 }
 crud.prototype.set = function(url,port){
-	if(!url) url='http://localhost';
-	this.url = url+':'+port+'/';
+	if(!url) url='localhost';
+	this.url = window.location.protocol+'//'+url+':'+port+'/';
+	console.log(this.url);
 }
 
 crud.prototype.logout = function(){
@@ -172,7 +173,6 @@ crud.prototype.install = function(install){
 	});
 }
 function send(req,opt){
-
 	return new Promise(function(resolve,reject){
 		fetch(req,opt).then(function(response){
 			var type = response.headers.get("content-type");
