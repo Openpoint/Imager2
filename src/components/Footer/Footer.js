@@ -3,9 +3,17 @@ import FontAwesome from 'react-fontawesome';
 import {Link} from 'react-router-dom';
 import {Tooltip} from '../Tooltip/Tooltip.js';
 import crud from '../../modules/crud.js';
+import tools from '../../modules/tools.js';
 import './Footer.css';
 
 class Controls extends Component {
+	constructor(props){
+		super(props);
+		this.slideshow = this.slideshow.bind(this);
+	}
+	slideshow(){
+		this.G('slideshow')('front');
+	}
 	render(){
 		this.G = this.props.Global;
 
@@ -24,6 +32,9 @@ class Controls extends Component {
 				<div className = 'home'>
 				{this.G('state').Context === 'page' && (
 					<Link to='/'><FontAwesome name='home' /></Link>
+				)}
+				{this.G('state').Context === 'front' && (
+					<FontAwesome name='play-circle' size = 'lg' style={{cursor:'pointer'}} onClick={()=>this.slideshow()}/>
 				)}
 				</div>
 			</div>
@@ -54,27 +65,34 @@ export class Footer extends Component {
 				return p.value;
 			})
 			self.pages = pages;
+			self.G('pages',pages);
 		})
 	}
 	nav(dir){
 		var list = this.pages;
+		var index = tools.getindex(this.G('location'));
+		if(index) this.prev = index;
+
 		switch(dir){
 			case 'random':
-				var list2 = [];
-				if(this.seen.length) list2 = list.filter(function(i){return this.seen.indexOf(i) === -1});
-				if(list2.length){
-					list = list2;
-				}else if(this.seen.length){
-					this.seen  = [];
+				var seen = this.G('seen');
+				if(seen.length === list.length){
+					seen = [];
+					this.G('seen',[])
 				}
-				var random = Math.floor((Math.random() * list.length));
-				this.G('history').push('/page/'+list[random]);
+				this.prev?this.in=list.indexOf(this.prev):this.in=0;
+				var list2 = list.filter(function(i){return seen.indexOf(i) === -1});;
+				if(this.seen.length) list2 = list.filter(function(i){return this.seen.indexOf(i) === -1});
+				var random = Math.floor((Math.random() * list2.length));
+				this.G('history').push('/page/'+list2[random]);
 			break;
 			case 'left':
+				this.prev?this.in=list.indexOf(this.prev):this.in=0;
 				typeof this.in!=='undefined'?this.in--:this.in=0;
 				if(this.in < 0) this.in = list.length - 1;
 			break;
 			case 'right':
+				this.prev?this.in=list.indexOf(this.prev):this.in=-1;
 				typeof this.in!=='undefined'?this.in++:this.in=0;
 				if(this.in >= list.length) this.in = 0;
 

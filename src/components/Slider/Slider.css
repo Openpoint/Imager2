@@ -1,64 +1,125 @@
 #slideshow{
 	position:fixed;
+	display:none;
 	width:0;
 	height:0;
-	top:50%;
-	left:50%;
-	opacity:0;
+	top:0;
+	left:0;
 	overflow:hidden;
 	background:rgba(0,0,0,.9);
 	color:white;
-	display:flex;
-	align-items: center;
-	justify-content:center;
-	transition:all .5s;
 	z-index:1000;
 }
-
+#slideshow #ssbusy{
+	position:absolute;
+	top:50%;
+	left:50%;
+	transform:translate(-50%,-50%);
+	color:white;
+	opacity:0;
+	transition:opacity 2s;
+}
+#slideshow #ssbusy[active='true']{
+	opacity:1;
+}
 #slideshow.open{
 	width:100%;
 	height:100%;
+	display:block;
 	top:0;
 	left:0;
-	opacity:1;
+}
+#slideshow .close{
+	display:flex;
+	align-items: center;
+}
+#slideshow .topcontrols{
+	position:absolute;
+	height:4.5%;
+	width:100%;
+	padding:0 10px;
+	box-sizing: border-box;
+	top:0;
+	left:0;
+	display:flex;
+	align-items: center;
+	justify-content: space-between;
+	z-index:2;
+}
+#slideshow .topcontrols > span, #slideshow .topcontrols > div > span{
+	display:block;
+	cursor:pointer;
+	margin:0 10px 0 10px;
+}
+
+#slideshow .topcontrols > div{
+	display:flex;
+	justify-content: center;
+}
+#slideshow .random.off,#slideshow .auto.off{
+	opacity:.5;
 }
 #slideshow .control{
 	cursor:pointer;
+	position:absolute;
+	top:50%;
+	transform:translate(0,-50%);
+	z-index:2;
 }
 #slideshow .control.left{
 	padding:20px 20px 20px 5px;
+	left:0;
 }
 #slideshow .control.right{
 	padding:20px 5px 20px 20px;
-}
-#slideshow .close{
-	display:block;
-	position:absolute;
-	right:20px;
-	top:20px;
-	z-index:2;
+	right:0;
 }
 
 #slideshow .alt{
 	position:absolute;
 	width:100%;
-	text-align:center;
+	height:4.5%;
 	bottom:0;
 	left:0;
-	padding:30px;
+	display:flex;
+	align-items: center;
+	justify-content: center;
 }
+#slideshow .simage{
+	position:absolute;
+	top:0;
+	left:0;
+	width:100%;
+	height:100%;
+}
+
 #slideshow img{
+	position:absolute;
+	top:50%;
+	left:50%;
+	transform:translate(-50%,-50%);
 	max-height:90%;
 	max-width:90%;
 	width:auto;
 	height:auto;
-	line-height:0;
+	display:block;
 	margin:0 auto;
 	border:5px solid white;
 	background:var(--color1);
-	opacity:0;
-	transition:opacity 2s;
+
 }
-#slideshow.open img{
+#slideshow .ani{
+	transition:opacity 1s;
+}
+#slideshow .front img.noani{
+	opacity:0;
+}
+#slideshow .front img.ani{
 	opacity:1;
+}
+#slideshow .back img.noani{
+	opacity:1;
+}
+#slideshow .back img.ani{
+	opacity:0;
 }

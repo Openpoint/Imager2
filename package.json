@@ -4,8 +4,8 @@
   "description": "Imager creates a lightweight, copyright safe, image library",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js production",
-    "start-dev": "node index.js development",
+    "imager": "node index.js production",
+    "imager-dev": "node index.js development",
     "build": "node scripts/build.js",
     "test": "node scripts/test.js --env=jsdom"
   },

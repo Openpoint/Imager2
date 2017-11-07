@@ -46,7 +46,6 @@ export class Titlebar extends Component {
 					<menu className = {this.state.open?'open':'closed'}>
 						{!this.state.loggedin && <div onClick={()=>{this.G('modal')('login')}} className='mitem'>Log In</div>}
 						{this.state.loggedin && <div onClick={()=>{this.G('auth')(false)}} className='mitem'>Log Out</div>}
-						<div className='mitem'>Favourites</div>
 					</menu>
 				)}
 			</div>

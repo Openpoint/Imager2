@@ -58,17 +58,7 @@ tools.prototype.decode = function(encoded){
 	decoded = null;
 	return dec;
 }
-/*
-tools.prototype.getFunctions = function(f){
-	var functions = {}
-	Object.keys(f).forEach((key)=>{
-		if(f.hasOwnProperty(key) && typeof f[key]==='function'){
-			functions[key] = f[key];
-		}
-	})
-	return functions;
-}
-*/
+
 tools.prototype.querystring = function(req,params){
 	if(params && typeof params === 'object'){
 		Object.keys(params).forEach(function(key,i){
@@ -103,7 +93,7 @@ tools.prototype.getClass = function(image){
 tools.prototype.filetype = function(file){
 	file=file.split('?')[0].split('.');
 	file = file[file.length-1];
-	return file.toLowerCase();
+	return file.toLowerCase().trim();
 }
 //get properties from image
 tools.prototype.imageInfo = function(image){
@@ -130,6 +120,79 @@ tools.prototype.sleep = function(milliseconds) {
 		if ((new Date().getTime() - start) > milliseconds){
 			break;
 		}
+	}
+}
+//calculate the range of images to keep in memory
+tools.prototype.getrange = function(active,rangesize){
+	active.sort(function(a,b){
+		return a.index-b.index;
+	});
+	var b = active[0].index;
+	var t = active[active.length-1].index;
+	var r = Math.round((rangesize - active.length)/2);
+	if(b-r < 0){
+		r = r+((b-r)*-1);
+		b = 0;
+	}else{
+		b = b-r;
+	}
+	return {
+		bottom:b,
+		top:t+r
+	}
+}
+//apply fullscreen to id
+tools.prototype.fullscreen = function(id){
+	if (
+		document.fullscreenEnabled ||
+		document.webkitFullscreenEnabled ||
+		document.mozFullScreenEnabled ||
+		document.msFullscreenEnabled
+	) {
+		var i= document.getElementById(id)
+		if (i.requestFullscreen) {
+			i.requestFullscreen();
+		} else if (i.webkitRequestFullscreen) {
+			i.webkitRequestFullscreen();
+		} else if (i.mozRequestFullScreen) {
+			i.mozRequestFullScreen();
+		} else if (i.msRequestFullscreen) {
+			i.msRequestFullscreen();
+		}
+	}
+}
+//exit fullscreen
+tools.prototype.nofullscreen = function(){
+	if (document.exitFullscreen) {
+		document.exitFullscreen();
+	} else if (document.webkitExitFullscreen) {
+		document.webkitExitFullscreen();
+	} else if (document.mozCancelFullScreen) {
+		document.mozCancelFullScreen();
+	} else if (document.msExitFullscreen) {
+		document.msExitFullscreen();
+	}
+}
+//check for fullscreen
+tools.prototype.isfullscreen = function(){
+	if (
+		document.fullscreenElement ||
+		document.webkitFullscreenElement ||
+		document.mozFullScreenElement ||
+		document.msFullscreenElement
+	) {
+		return true;
+	}
+	return false;
+}
+//get index from location
+tools.prototype.getindex = function(location){
+	var index = location.pathname.split('/');
+	index = index[index.length-1];
+	if(index.length){
+		return index;
+	}else{
+		return false;
 	}
 }
 module.exports = new tools();

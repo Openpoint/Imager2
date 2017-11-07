@@ -9,6 +9,7 @@ import {Footer} from './components/Footer/Footer.js';
 import {Modal} from './components/Modal/Modal.js';
 import {Install} from './components/Install/Install.js';
 import crud from './modules/crud.js';
+import tools from './modules/tools.js';
 
 crud.set(process.env.PUBLIC_URL,process.env.API_PORT)
 
@@ -32,6 +33,8 @@ class App extends Component {
 		this.auth = this.auth.bind(this);
 		this.delete = this.delete.bind(this);
 		this.isloading = this.isloading.bind(this);
+		this.seen = this.seen.bind(this);
+		this.close = this.close.bind(this);
 		this.Global = this.Global.bind(this);
 
 		var con = this.location.pathname==='/'?'front':'page';
@@ -62,7 +65,6 @@ class App extends Component {
 
 		})
 		this.path = this.location.pathname;
-
 		this.Glob = {
 			location:this.location,
 			history:this.history,
@@ -71,11 +73,21 @@ class App extends Component {
 			auth:this.auth,
 			delete:this.delete,
 			isloading:this.isloading,
-			queue:[]
+			queue:[],
+			seen:[],
 		};
-
+		this.seen();
+		window.addEventListener('beforeunload',this.close);
 	}
-
+	close(){
+		window.removeEventListener('beforeunload',this.close);
+		var sleep = this.Glob.exit();
+		this.Glob = null;
+		this.setState({
+			exit:true
+		})
+		if(sleep) tools.sleep(1000);
+	}
 	Global(name,f){
 		if(!name && typeof f ==='undefined') return false;
 		if(typeof f ==='undefined' ){
@@ -109,12 +121,18 @@ class App extends Component {
 			reload:this.reload
 		});
 	}
+	seen(){
+		var index = tools.getindex(this.location)
+		if(index && this.Glob.seen.indexOf(index)===-1) this.Glob.seen.push(index);
+	}
 	componentWillReceiveProps(nextProps){
 
 		this.location = nextProps.location;
 		this.history = nextProps.history;
 		this.match = nextProps.match;
+		this.seen();
 
+		this.Glob.location = this.location;
 		if(this.path!==this.location.pathname){
 			this.setState({isloading:true});
 		}
@@ -127,20 +145,26 @@ class App extends Component {
 			})
 		}
 	}
-
+	componentWillUnmount(){
+		console.log('App is unmounting');
+		tools.sleep(1000);
+	}
 	shouldComponentUpdate(nextProps,nextState){
-		return(
+		if(this.Glob.temp && nextState.Context === 'front') return false;
+		var up = (
+			nextState.exit||
 			nextState.reload ||
 			nextState.isloading!==this.state.isloading ||
 			nextState.Context!==this.state.Context ||
 			nextState.install!==this.state.install ||
 			nextState.loggedin!==this.state.loggedin
 		)
+		return up;
 	}
 
 	render() {
 		//console.log('Render the App: id:'+this.location.pathname+' loggedin:'+this.state.loggedin+' isloading:'+this.state.isloading)
-		if(!this.state.install) return <div></div>
+		if(!this.state.install||this.state.exit) return <div></div>
 		if(this.state.install.installed) return (
 			<div id="App" className={[this.state.Context,this.state.isloading?'isloading':null].join(' ')}>
 				<div id='header'>

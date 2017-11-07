@@ -58,7 +58,6 @@ export class Search extends Component {
 			type:'link',
 			context:this.G('state').Context
 		};
-
 		window.addEventListener('scroll',this.fixsearch)
 	}
 	fixsearch(){
@@ -86,7 +85,7 @@ export class Search extends Component {
 		this.setState({value:event.target.value});
 	}
 	handleSubmit(event){
-		event.preventDefault();
+		if(event) event.preventDefault();
 		this.setState({value:''});
 
 		var url = placeholders[this.state.type].parse(this.state.value);
@@ -105,8 +104,8 @@ export class Search extends Component {
 				type:'google'
 			})
 		}
-		//console.error(newpage);
-		this.G("newpage",newpage);
+		//console.log(newpage)
+		if(this.G('pages').indexOf(newpage.id.toString()) === -1) this.G("newpage",newpage);
 		this.G("history").push('/page/'+newpage.id);
 
 	}
@@ -147,6 +146,7 @@ export class Search extends Component {
 						<Tooltip message='Enter an URL' position='bottom' />
 					</div>
 				</div>
+				{this.state.value.length > 2 && <div className = 'go' onClick={()=>this.handleSubmit()}>go</div>}
 			</form>
 			</div>
 		)

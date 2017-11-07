@@ -44,7 +44,7 @@ window.imager_tools = function(){
 
 		if(!resolve){
 			var init = true;
-			//to = 1000;
+			//to = 5000;
 			count = 0;
 			var p = new Promise(function(res,reject){
 				resolve = res;
@@ -57,18 +57,6 @@ window.imager_tools = function(){
 			resolve(true);
 			return;
 		}
-		/*
-		//if(h <= wh||h===oh||count > 10){
-		if(h <= wh||h===oh){
-			if(init){
-				to = 1000;
-			}else{
-				resolve(true);
-				return;
-			}
-		}
-		*/
-		//dir==='y'?i$(window).scrollTop(h-wh):i$(window).scrollLeft(h-wh);
 		dir==='y'?i$(window).scrollTop(i$(window).scrollTop()+900):i$(window).scrollLeft(i$(window).scrollLeft()+900);
 
 		setTimeout(function(){
@@ -84,6 +72,12 @@ window.imager_tools = function(){
 		console.log("scraping")
 		this.title = i$('title').html();
 		this.description = i$('meta[name=description]').attr("content");
+		go();
+		/*
+		i$(window).on('load',function(){
+			if(!self.launched) go();
+		})
+
 		if(document.readyState === 'complete'){
 			if(!self.launched) go();
 		}else{
@@ -94,6 +88,7 @@ window.imager_tools = function(){
 				if(!self.launched) go()
 			},3000)
 		}
+		*/
 
 		function go(){
 			console.log('gooooooooooooooooooo!')
@@ -157,10 +152,12 @@ window.imager_tools = function(){
 		if(i.attr('href')){
 			src = this.mod(i.attr('href'));
 			src = self.isImage(src);
+
 			if(src) this.foo.push({src:src});
 		}
 	},
 	this.ready = function(){
+
 		try{
 			this.foo = [];
 			var self = this;
@@ -170,11 +167,14 @@ window.imager_tools = function(){
 					try {
 						data = JSON.parse(data);
 						if(data.ou){
+							console.log(data.oh,data.ow)
 							self.foo.push({
 								src:data.ou,
 								alt:data.pt||'',
 								url:data.ru||null,
-								urltitle:data.st||null
+								urltitle:data.st||null,
+								width:data.ow,
+								height:data.oh
 							})
 						}
 					}

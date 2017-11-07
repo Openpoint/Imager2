@@ -5,7 +5,7 @@
 	bottom:0;
 	left:0;
 	z-index:100;
-	border-top:2px solid var(--color1);
+	border-top:2px solid white;
 }
 #footer a{
 	color:white;
@@ -52,7 +52,7 @@
 	display:flex;
 	justify-content:center;
 	align-items: center;
-	border-top:2px solid var(--color1);
+	border-top:2px solid white;
 }
 #footer .tower > .top{
 	width:100%;

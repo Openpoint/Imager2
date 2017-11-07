@@ -15,8 +15,8 @@
 	transition:opacity .5s;
 	border-radius:5px;
 	pointer-events:none;
-	z-index:10;
 	height:auto;
+	border:1px solid white;
 }
 .top.tooltip{
 	transform:translate(-50%,-10px);
@@ -42,23 +42,24 @@
 
 .tooltip::after{
 	content:'';
-	width: 0;
-	height: 0;
-	border-left: 10px solid transparent;
-	border-right: 10px solid transparent;
+	width: 13px;
+	height: 13px;
+	background:var(--color1);
 	position:absolute;
 	left:50%;
-	transform:translate(-10px);
+	z-index:1;
 }
 .top.tooltip::after{
 	top:100%;
 	bottom:100%;
-	border-top:none;
-	border-top: 10px solid var(--color1);
+	border-right:1px solid white;
+	border-bottom:1px solid white;
+	transform:translate(-50%,-6px) rotate(45deg);
 }
 .bottom.tooltip::after{
 	top:auto;
 	bottom:100%;
-	border-top:none;
-	border-bottom: 10px solid var(--color1);
+	border-left:1px solid white;
+	border-top:1px solid white;
+	transform:translate(-50%,6px) rotate(45deg);
 }

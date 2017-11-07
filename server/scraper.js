@@ -12,7 +12,7 @@ var scraper = function(app){
 	app.get('/scrape',function (req,res) {
 		var dest = decodeURIComponent(req.query.url);
 		//phantom.create(['--load-images=no']).then(function(browser){
-		phantom.create().then(function(browser){
+		phantom.create(['--ignore-ssl-errors=yes']).then(function(browser){
 			new scrape(dest,browser).then(function(data){
 				res.send(data);
 			},function(err){
@@ -85,6 +85,7 @@ function scrape(url,browser){
 				page.injectJs(bb);
 				page.injectJs(tools);
 			});
+
 			page.on('onLoadFinished',function(){
 				if(self.init) return;
 				self.init = true;
@@ -123,7 +124,9 @@ function scrape(url,browser){
 				height: 1080
 			});
 			await page.setting('userAgent','Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.120 Safari/537.36');
-			page.open(url);
+			page.open(url).then(function(status){
+				console.log('status:'+status);
+			});
 
 		} catch(err){
 			reject(err);

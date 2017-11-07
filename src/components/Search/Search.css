@@ -79,3 +79,18 @@ input:placeholder-shown{
 #search.sticky .logo{
 	display:block;
 }
+#search .go{
+	position:absolute;
+	right:10px;
+	top:50%;
+	transform:translate(0,-50%);
+	width:30px;
+	height:30px;
+	line-height:30px;
+	background:var(--color1);
+	text-align:center;
+	font-size:11px;
+	color:white;
+	border-radius:50%;
+	cursor:pointer;
+}

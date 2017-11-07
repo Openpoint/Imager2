@@ -21,9 +21,12 @@ export class Wall extends Component {
 		this.wall = this.wall.bind(this);
 		this.home = this.home.bind(this);
 		this.recieve = this.recieve.bind(this);
-		this.G("send",this.recieve)
+		this.G("send",this.recieve);
+		this.noims = this.noims.bind(this);
+		this.G("noims",this.noims);
 		this.clear = this.clear.bind(this);
 		this.remove = this.remove.bind(this);
+		this.cancel = this.cancel.bind(this);
 		this.state = {
 			slideshow:false,
 			id:this.props.id,
@@ -33,7 +36,24 @@ export class Wall extends Component {
 		};
 		this.p={};
 	}
-
+	cancel(){ //cancel a scrape action
+		if(this.p.scrape) this.p.scrape.cancel();
+		if(this.G('loadimages')){
+			this.G('cancel')();
+		}else if(this.state.isloading){
+			if(this.G('history').length){
+				this.G('history').goBack()
+			}else{
+				this.G('history').push('/');
+			}
+			this.G('isloading')(false,this.G('state').Context);
+		}else{
+			this.setState({
+				scrapemessage:false,
+				refresh:false
+			})
+		}
+	}
 	remove(){
 		this.G('tempdeleted',true);
 		this.G('history').push('/');
@@ -69,7 +89,6 @@ export class Wall extends Component {
 			this.G('newpage',false);
 		}else{
 			this.p.back = crud.read('show','image','backpage/'+props.id,{deleted:false}).then(function(page){
-				console.log('got page')
 				self.G('allims',page.images);
 				self.wall(page);
 			},function(err){
@@ -77,18 +96,38 @@ export class Wall extends Component {
 			})
 		}
 	}
-	renew(query,id,added){
+	renew(query,id,added){ //initiate the scrape sequence
 		if((!added && this.state.refresh)||!query){//stop incessant user behaviour on the refresh button
-			this.G('cancel')();
+			this.cancel();
 			return;
 		}
 		if(!added) this.G('pageupdate',true);
-		this.setState({
-			refresh:true,
-			scrapemessage:'Scraping '+tools.sitename(query)+' for images...'
-		})
 		var self = this;
+		this.icount = 30;
+		self.setState({
+			refresh:true,
+			scrapemessage:'Studying '+tools.sitename(query)+' for images... ('+self.icount+')'
+		})
+		this.imessage = setInterval(function(){
+			self.icount--;
+			if(!self.icount){
+				self.setState({
+					refresh:true,
+					scrapemessage:'There is possibly a problem studying '+tools.sitename(query)+' ...'
+				})
+				clearInterval(self.imessage);
+				return;
+			}
+			self.setState({
+				refresh:true,
+				scrapemessage:'Studying '+tools.sitename(query)+' for images... ('+self.icount+')'
+			})
+
+		},1200)
+
+
 		this.p.scrape = scraper.scrape(query,id).then(function(data){
+			clearInterval(self.imessage);
 			if(data.images && data.images.length){
 				self.G('loadimages',data);
 				self.setState({
@@ -140,24 +179,27 @@ export class Wall extends Component {
 		page.images = tools.imageSort(page.images,'page');
 		this.wall(page);
 	}
-
+	noims(page){
+		this.G('page',false);
+		this.setState({
+			description:tools.decode(page.description),
+			title:tools.decode(page.title),
+			link:page.link,
+			refresh:false,
+			scrapemessage:"No images were found for the page",
+			nogood:true
+		});
+		this.G('isloading')(true,'page');
+	}
 	wall(page){
-		if(!page.images || !page.images.length){
-			this.G('page',false);
-			this.setState({
-				description:tools.decode(page.description),
-				title:tools.decode(page.title),
-				link:page.link,
-				refresh:false,
-				scrapemessage:"No images were found for the page",
-				nogood:true
-			});
-			this.G('isloading')(true);
-			return;
-		}
-		page.images = page.images.filter(function(im){
+
+		if(page.images) page.images = page.images.filter(function(im){
 			return !im.deleted;
 		})
+		if(!page.images || !page.images.length){
+			this.noims(page);
+			return;
+		}
 		this.G('page',page);
 		this.setState({
 			description:tools.decode(page.description),
@@ -182,7 +224,6 @@ export class Wall extends Component {
 		this.G('isloading')(false);
 	}
 	clear(){
-
 		this.G('loadimages',false);
 		this.G('allims',false);
 		clearTimeout(this.redirect);
@@ -215,11 +256,13 @@ export class Wall extends Component {
 		if(nextProps.id!==this.props.id || this.G('newpage') || nextProps.reload){
 			this.clear();
 			this.update(nextProps);
+			this.setState({
+				nogood:false
+			})
 		}
 	}
 
 	shouldComponentUpdate(nextProps,nextState){
-
 		return(
 			nextProps.id!==this.props.id ||
 			nextProps.reload ||
@@ -254,7 +297,7 @@ export class Wall extends Component {
 					{!this.state.nogood && <FontAwesome spin size='5x' name='refresh' />}
 					{this.state.nogood && <FontAwesome size='5x' name='exclamation-triangle' />}
 					{this.state.scrapemessage && <div className='message'>{this.state.scrapemessage}</div>}
-					<div onClick = {()=>this.G('cancel')()} >cancel</div>
+					{this.state.scrapemessage && <div className='button' onClick = {()=>this.cancel()} >Skip</div>}
 				</div>
 				{this.G('loadimages') && <LoadImages Global = {this.G} />}
 			</div>
@@ -268,7 +311,7 @@ export class Wall extends Component {
 						<div className = 'controls'>
 							{this.state.loggedin && <div className = 'control ttParent'>
 								<FontAwesome spin={this.state.refresh} size='lg' name='refresh' onClick = {()=>this.renew(this.state.link,this.state.id)} />
-								<Tooltip message = {this.state.scrapemessage||'Look for more images'} position='top' />
+								<Tooltip message = {this.state.scrapemessage?this.state.scrapemessage+' Click to skip':'Look for more images'} position='top' />
 							</div>}
 							{(this.state.loggedin||this.G('page').temp) && (
 							<div className = 'control ttParent'>
@@ -294,6 +337,7 @@ export class Wall extends Component {
 					<div className='front widgets'>
 						{this.G('page') && this.G('page').images.length && <ImageList Global = {this.G} />}
 					</div>
+					<Slider Global = {this.G}/>
 				</div>
 			)
 		}
