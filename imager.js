@@ -19,10 +19,13 @@ app.use(bodyParser.json({limit: '5mb'}));
 if(process.argv[2]!=='development'){
 	const path = require('path');
 	var pub = __dirname + "/build/";
+	/*
 	app.get('/', function(req, res) {
 		res.sendFile(path.join(pub + "index.html"));
 	});
+	*/
 	app.use('/',express.static(pub));
+	app.use('/page/*',express.static(pub));
 }else{
 	var corsOptions = {
 	  origin: function(origin,callback){
