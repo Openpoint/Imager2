@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {Route,withRouter} from 'react-router-dom';
 import './css/App.css';
+import './font-awesome/css/font-awesome.min.css';
 import {Wall} from './components/Wall/Wall.js';
 import {Search} from './components/Search/Search.js';
 import {Titlebar} from './components/Header/Header.js';
@@ -10,10 +11,8 @@ import {Modal} from './components/Modal/Modal.js';
 import {Install} from './components/Install/Install.js';
 import crud from './modules/crud.js';
 import tools from './modules/tools.js';
-
-console.error(window.location);
-
-crud.set(process.env._HOME,process.env.API_PORT)
+console.log(process.env);
+crud.set(process.env.API_PORT,process.env.NODE_ENV);
 
 const title = 'Imager';
 

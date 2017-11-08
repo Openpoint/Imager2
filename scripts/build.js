@@ -79,12 +79,14 @@ measureFileSizesBeforeBuild(paths.appBuild)
         WARN_AFTER_BUNDLE_GZIP_SIZE,
         WARN_AFTER_CHUNK_GZIP_SIZE
       );
-      console.log();
-
+      console.log('\nImager is listening at port:'+process.env['API_PORT']);
+	  console.log('Configure a proxy on your web server of choice.')
+/*
       const appPackage = require(paths.appPackageJson);
       const publicUrl = paths.publicUrl;
       const publicPath = config.output.publicPath;
       const buildFolder = path.relative(process.cwd(), paths.appBuild);
+
       printHostingInstructions(
         appPackage,
         publicUrl,
@@ -92,6 +94,7 @@ measureFileSizesBeforeBuild(paths.appBuild)
         buildFolder,
         useYarn
       );
+*/  
     },
     err => {
       console.log(chalk.red('Failed to compile.\n'));
@@ -111,6 +114,7 @@ function build(previousFileSizes) {
         return reject(err);
       }
       const messages = formatWebpackMessages(stats.toJson({}, true));
+
       if (messages.errors.length) {
         // Only keep the first error. Others are often indicative
         // of the same problem, but confuse the reader with noise.

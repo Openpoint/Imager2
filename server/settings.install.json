@@ -7,6 +7,10 @@
 		"protocol": "http",
 		"host": "localhost"
 	},
+	"endpoints":{
+		"API":"",
+		"CORS":""
+	},
 	"user": {
 		"username": "",
 		"password": "",

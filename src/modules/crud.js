@@ -14,10 +14,10 @@ var crud = function(url,port){
 	};
 	this.token = Cookies.get('token');
 }
-crud.prototype.set = function(url,port){
-	if(!url) url='localhost';
-	this.url = window.location.protocol+'//'+url+':'+port+'/';
-	console.log(this.url);
+crud.prototype.set = function(port,env){
+	if(!port||env==='production') port = window.location.port;
+	port?port=':'+port+'/':port = '/'
+	this.url = window.location.protocol+'//'+window.location.hostname+port;
 }
 
 crud.prototype.logout = function(){

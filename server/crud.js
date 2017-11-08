@@ -1,11 +1,6 @@
 "use strict";
 const request = require('request');
 const tools = require('../src/modules/tools.js');
-const fs = require('fs');
-
-if(!fs.existsSync('./server/settings.json')){
-	fs.copyFileSync('./server/settings.install.json','./server/settings.json');
-}
 
 var settings = require('./settings.json');
 const design = require('./compile.js');

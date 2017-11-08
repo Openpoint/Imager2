@@ -73,9 +73,7 @@ function getClientEnvironment(publicUrl) {
         // For example, <img src={process.env.PUBLIC_URL + '/img/logo.png'} />.
         // This should only be used as an escape hatch. Normally you would put
         // images into the `src` and `import` them in code to get their paths.
-        PUBLIC_URL: publicUrl,
 		API_PORT:process.env.API_PORT,
-		_HOME:process.env._HOME
       }
     );
   // Stringify all values so we can feed into Webpack DefinePlugin
