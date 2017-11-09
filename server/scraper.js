@@ -11,6 +11,13 @@ const {URL} = require('url');
 var scraper = function(app){
 	app.get('/scrape',function (req,res) {
 		var dest = decodeURIComponent(req.query.url);
+		var site = sitename(dest);
+		var opt;
+		if(site === 'flickr'){
+			opt = []
+		}else{
+			opt = ['--load-images=no','--ignore-ssl-errors=yes']
+		}
 		//phantom.create(['--load-images=no']).then(function(browser){
 		phantom.create(['--ignore-ssl-errors=yes']).then(function(browser){
 			new scrape(dest,browser).then(function(data){
@@ -22,7 +29,12 @@ var scraper = function(app){
 		})
 	})
 }
-
+function sitename(url){
+	var site = new URL(url).hostname;
+	site = site.split('.');
+	site = site[site.length-2];
+	return site;
+}
 function examine(res,url){
 	if(res.error) return res;
 	var html = '';
@@ -46,9 +58,7 @@ function examine(res,url){
 }
 
 function scrape(url,browser){
-	var site = new URL(url).hostname;
-	site = site.split('.');
-	site = site[site.length-2];
+	var site = sitename(url);
 	console.log(site)
 	var self = this;
 	return new Promise(async function(resolve,reject){
@@ -119,10 +129,19 @@ function scrape(url,browser){
 					}
 				});
 			});
-			await page.property('viewportSize', {
-				width: 1920,
-				height: 1080
-			});
+			var size;
+			if(site === 'flickr'){
+				size = {
+					width: 1920,
+					height: 1080
+				}
+			}else{
+				size = {
+					width: 1920,
+					height: 20000
+				}
+			}
+			await page.property('viewportSize', size);
 			await page.setting('userAgent','Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.120 Safari/537.36');
 			page.open(url).then(function(status){
 				console.log('status:'+status);

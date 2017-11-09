@@ -8,10 +8,17 @@ const child = require('child_process');
 const detect = require('detect-port-alt');
 const prompt = require('prompt');
 const fs = require('fs');
+const crypto = require('crypto');
 
+var supersecret = crypto.randomBytes(20).toString('hex');
+console.log(supersecret);
 
 if(!fs.existsSync('./server/settings.json')){
-	fs.copyFileSync('./server/settings.install.json','./server/settings.json');
+	var settings = require('./server/settings.install.json');
+	settings.supersecret = crypto.randomBytes(20).toString('hex');
+	var data = JSON.stringify(settings,null,'\t');
+	fs.writeFileSync('./server/settings.json',data)
+	//fs.copyFileSync('./server/settings.install.json','./server/settings.json');
 }
 
 app.use(bodyParser.json({limit: '5mb'}));

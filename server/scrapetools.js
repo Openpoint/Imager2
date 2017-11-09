@@ -96,6 +96,10 @@ window.imager_tools = function(){
 			self.launched = true;
 			var wh = i$(window).height();
 			var ww = i$(window).width();
+			if(self.site==='wikipedia'){
+				self.ready();
+				return;
+			}
 			var count = 0;
 			self.scroll(wh,'y').then(function(){
 				console.log('at the bottom');
@@ -140,6 +144,14 @@ window.imager_tools = function(){
 			//src = src.join('.');
 			//console.log(src)
 		}
+		if(src.indexOf('wikimedia.org/')!==-1 && src.indexOf('px-')!==-1 && src.indexOf('thumb/')!==-1){
+			var file = src.split('/');
+			file.pop();
+			src = file.join('/');
+			src = src.replace('thumb/','');
+			//file = file[file.length-1].split("px-")[0];
+			//src = src.replace(file+'px-','1200px-');
+		}
 		src = self.fix(src);
 		return src;
 	},
@@ -147,7 +159,13 @@ window.imager_tools = function(){
 		if(i.css('background-image').indexOf('url(') === 0){
 			var src = i.css('background-image');
 			src = this.mod(src);
-			if(src) this.foo.push({src:src})
+			var alt,url,urltitle;
+			if(self.site==='flickr'){
+				urltitle = i$('.interaction-bar',i).attr('title');
+				url = 'https://flickr.com'+i$('.overlay',i).attr('href');
+				alt = i$('.title',i).text();
+			}
+			if(src) this.foo.push({src:src,alt:alt,url:url,urltitle:urltitle});
 		}
 		if(i.attr('href')){
 			src = this.mod(i.attr('href'));
@@ -185,8 +203,25 @@ window.imager_tools = function(){
 			}
 			if(!this.foo.length){
 				i$('img,object').each(function(){
-					this.src = self.mod(this.src)
-					if(this.src) self.foo.push({src:this.src,alt:this.alt});
+					this.src = self.mod(this.src);
+					if(self.site==='wikipedia'){
+						var url = i$(this).parent().attr('href');
+						if(url && url.indexOf('/wiki/')===0){
+							this.url="https://en.wikipedia.org"+url;
+							this.urltitle = "Image on wikipedia"
+						}
+
+						var info = i$('.searchresult,.thumbcaption',i$(this).parent().parent().parent());
+						if(info){
+							var alt = i$(info[0]).contents().text();
+							if(alt.indexOf('English:') > 0) alt = alt.split('English:')[1];
+							alt = alt.trim();
+							if(alt.indexOf('Description:')!==-1) alt=alt.replace('Description:','');
+							if(alt.indexOf('Description')===0) alt=alt.replace('Description','');
+							if(!this.alt && alt) this.alt = alt;
+						}
+					}
+					if(this.src) self.foo.push({src:this.src,alt:this.alt,url:this.url,urltitle:this.urltitle});
 				});
 
 				i$('div,a,span,body,li,main,td,table,tr,th').each(function(){

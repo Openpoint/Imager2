@@ -15,15 +15,13 @@ module.exports =  function(app,set){
 	settings.version = version;
 	return new Promise(function(resolve,reject){
 		app.post('/:action',function(req,res,next){
-			console.log(req.params.action)
 			switch(req.params.action){
 				case 'install':
-
 					settings.install = req.body;
 					checkinstall().then(function(data){
 						if(data.version||data.ok){
 							res.send(data)
-							auth = new auth(couch,host);
+							auth = new auth(couch,host,settings.install);
 							return;
 						}
 						if(data.installed){
@@ -39,30 +37,49 @@ module.exports =  function(app,set){
 				case 'adminuser':
 					delete req.body.pass2;
 					settings.user = req.body;
-					console.log(settings.user);
 					auth.getUser(settings.user.username).then(function(user){
 						if(user.error){
 							settings.user.roles = ['imageradmin'];
-							auth.makeUser(settings.user).then(function(user){
-								console.log(user)
-								if(user.ok){
-									settings.user={
-										username:settings.user.name,
-										password:settings.user.password,
-										email:settings.user.email
-									}
-									settings.install.installed = true;
-									delete settings.install.dbadmin;
-									delete settings.install.dbpass;
-									resolve(settings);
-									save(settings);
-									res.send(user);
+							auth.makeUser(settings.user).then(function(data){
+								console.log('makeuser');
+								if(data.ok){
+									ok(data);
 								}
 							})
 							return;
 						}
-						res.send({error:true,reason:'User already exists'});
+						auth.checkUser(settings.user.username,settings.user.password).then(function(user){
+							console.log('checkuser')
+							if(user.error||(user.email && user.email!==settings.user.email)){
+								res.send({error:true,reason:'User already exists, but the password or email is incorrect'});
+							}else{
+								if(user.roles.indexOf('imageradmin') === -1) user.roles.push('imageradmin');
+								if(user.roles.indexOf('imager') === -1) user.roles.push('imager');
+								user.email = settings.user.email;
+								auth.updateUser(user).then(function(data){
+									console.log('updateuser');
+									if(data.ok) {
+										ok(data);
+									}
+								});
+							}
+						});
+
 					})
+					function ok(data){
+						console.log('OK');
+						settings.user={
+							username:settings.user.username,
+							password:settings.user.password,
+							email:settings.user.email
+						}
+						settings.install.installed = true;
+						delete settings.install.dbadmin;
+						delete settings.install.dbpass;
+						resolve(settings);
+						save(settings);
+						res.send(data);
+					}
 					return;
 				break;
 				next();

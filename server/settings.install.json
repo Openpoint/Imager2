@@ -7,10 +7,7 @@
 		"protocol": "http",
 		"host": "localhost"
 	},
-	"endpoints":{
-		"API":"",
-		"CORS":""
-	},
+	"supersecret":"",
 	"user": {
 		"username": "",
 		"password": "",

@@ -5,7 +5,6 @@ const tools = require('../src/modules/tools.js');
 var settings = require('./settings.json');
 const design = require('./compile.js');
 var jwt = require('jsonwebtoken');
-const supersecret = 'supersecret';
 
 //create the database connection strings;
 var couch,host,protocol;
@@ -64,7 +63,7 @@ var crud = function(app){
 				},function(err,resp,body){
 					console.log(body);
 					if(!err && !body.error && body.db_name){
-						var token = jwt.sign({username:username},supersecret,{expiresIn:'1d'});
+						var token = jwt.sign({username:username},settings.supersecret,{expiresIn:'1d'});
 						res.send({auth:true,token:token})
 					}else{
 						res.send({auth:false})
@@ -162,7 +161,7 @@ var crud = function(app){
 //check if a auth token is valid
 function auth(token){
 	if(token === 'undefined') return 'no token given';
-	return jwt.verify(token, supersecret, function(err, decoded){
+	return jwt.verify(token,settings.supersecret, function(err, decoded){
 		if(!err){
 			return 'true';
 		}else{

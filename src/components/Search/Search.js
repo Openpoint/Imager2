@@ -25,14 +25,15 @@ const placeholders = {
 		}
 	},
 
-	"500px":{
-		message:'Search 500px',
+	"wiki":{
+		message:'Search WikipediA',
 		parse:function(val){
 			if(val.indexOf('http')===0) return false;
 			console.error(val)
 			val = val.split(' ').join('+');
 			console.error(val)
-			return 'https://500px.com/search?q='+val+'&type=photos&sort=relevance'
+			return 'https://en.wikipedia.org/w/index.php?title=Special:Search&limit=300&offset=0&ns=6&profile=images&search='+val
+			//return 'https://500px.com/search?q='+val+'&type=photos&sort=relevance'
 		}
 	},
 
@@ -128,9 +129,9 @@ export class Search extends Component {
 				<input type='text' value={this.state.value} onChange = {this.handleChange} placeholder={placeholders[this.state.type].message} ref={(input)=>this.input=input}/>
 				<div className='controls'>
 					<div className='control'><Link to="/"><Logo /></Link></div>
-					<div className={['control ttParent',this.state.type==='500px'?'bold':''].join(' ')} >
-						<FontAwesome name='500px' onClick={(event)=>this.setsearch(event,'500px')} />
-						<Tooltip message='Search on 500px' position='bottom' />
+					<div className={['control ttParent',this.state.type==='wiki'?'bold':''].join(' ')} >
+						<FontAwesome name='wikipedia-w' onClick={(event)=>this.setsearch(event,'wiki')} />
+						<Tooltip message='Search on WikipediA' position='bottom' />
 					</div>
 					<div className={['control ttParent',this.state.type==='flickr'?'bold':''].join(' ')} >
 						<FontAwesome name='flickr' onClick={(event)=>this.setsearch(event,'flickr')}/>
