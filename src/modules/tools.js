@@ -31,6 +31,9 @@ tools.prototype.imageSort = function(images,context){
 			return img;
 		}
 	})
+	images = images.filter(function(im){
+		return !im.deleted;
+	})
 	//return images for front page
 	if(context === 'front') return images;
 	//group images by size for back page
@@ -107,9 +110,12 @@ tools.prototype.imageInfo = function(image){
 }
 
 //cancel pending promises (make sure the promise has been created with bluebird, not native Promise)
-tools.prototype.cancel = function(p){
+tools.prototype.cancel = function(p,type){
 	Object.keys(p).forEach(function(key){
-		if(p.hasOwnProperty(key)) p[key].cancel();
+		if(p.hasOwnProperty(key)){
+			type==='p'?p[key].cancel():clearTimeout(p[key])
+			delete p[key];
+		}
 	})
 }
 
@@ -194,5 +200,26 @@ tools.prototype.getindex = function(location){
 	}else{
 		return false;
 	}
+}
+//scroll to the top of the pages
+tools.prototype.scrolltop = function(){
+	if(this.st) clearInterval(this.st);
+	if(!window.scrollY) return;
+	var wall = document.getElementById('wall');
+	wall.setAttribute('scrolling',true);
+	var to =15
+	var time = 1000/to;
+	var step = Math.ceil(window.scrollY/time);
+	if(step < 10) step = 10;
+	var self = this;
+	this.st = setInterval(function(){
+		if(!window.scrollY){
+			clearInterval(self.st);
+			wall.removeAttribute('scrolling');
+			return;
+		}
+		window.scrollTo(0,window.scrollY-step);
+	},to)
+
 }
 module.exports = new tools();

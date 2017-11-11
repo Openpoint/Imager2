@@ -84,7 +84,8 @@
 	height:auto;
 	background:var(--color1);
 }
-#wall .hidden img,#wall .hidden canvas{
+
+#wall .image .inner[data-vis='false']{
 	display:none;
 	visibility:hidden;
 }
@@ -136,6 +137,9 @@
 	background-size:100%!important;
 	overflow:hidden;
 }
+#wall[scrolling="true"] .ifront{
+	display:none;
+}
 #wall .info{
 	position:absolute;
 	z-index:1;
@@ -149,7 +153,7 @@
 #wall .loaded .ifront{
 	opacity:1;
 }
-#wall .loaded .ifront.hidden{
+#wall .loaded[data-vis='false'] .ifront{
 	opacity:0;
 }
 
@@ -226,8 +230,12 @@
 	line-height:0;
 	width:22px;
 	height:auto;
+	opacity:1;
 	transition:opacity .5s;
 	background:none;
+}
+#wall .favicon img[data-vis='false']{
+	opacity:0;
 }
 #imagesloading{
 	display:flex;

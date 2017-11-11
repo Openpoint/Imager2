@@ -11,6 +11,7 @@ const {URL} = require('url');
 var scraper = function(app){
 	app.get('/scrape',function (req,res) {
 		var dest = decodeURIComponent(req.query.url);
+		dest = encodeURI(dest);
 		var site = sitename(dest);
 		var opt;
 		if(site === 'flickr'){

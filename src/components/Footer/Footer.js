@@ -19,6 +19,11 @@ class Controls extends Component {
 
 		return(
 			<div className='controls'>
+				<div className='extra' style={{fontSize:".85em"}}>
+					<div className='icon'>1</div>
+					<div className='icon'>2</div>
+					<div className='icon'>3</div>
+				</div>
 				<div className = 'tower'>
 					<div className='top'>
 						<div className='left icon' onClick={()=>this.G('nav')('left')}><FontAwesome name='chevron-left' /></div>
@@ -28,14 +33,18 @@ class Controls extends Component {
 						</div>
 						<div className='right icon' onClick={()=>this.G('nav')('right')}><FontAwesome name='chevron-right' /></div>
 					</div>
+					<div className = 'home'>
+						{this.G('state').Context === 'page' && (
+							<Link to='/'><FontAwesome name='home' /></Link>
+						)}
+						{this.G('state').Context === 'front' && (
+							<FontAwesome name='play-circle' size = 'lg' style={{cursor:'pointer'}} onClick={()=>this.slideshow()}/>
+						)}
+					</div>
 				</div>
-				<div className = 'home'>
-				{this.G('state').Context === 'page' && (
-					<Link to='/'><FontAwesome name='home' /></Link>
-				)}
-				{this.G('state').Context === 'front' && (
-					<FontAwesome name='play-circle' size = 'lg' style={{cursor:'pointer'}} onClick={()=>this.slideshow()}/>
-				)}
+
+				<div className='extra'>
+					<div className='icon' onClick={()=>tools.scrolltop()}><FontAwesome name='arrow-up' /></div>
 				</div>
 			</div>
 		)
