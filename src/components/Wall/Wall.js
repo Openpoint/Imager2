@@ -180,6 +180,7 @@ export class Wall extends Component {
 		this.wall(page);
 	}
 	noims(page){
+		if(!page) page = this.G('page');
 		this.G('page',false);
 		this.setState({
 			description:tools.decode(page.description),

@@ -46,22 +46,38 @@ crud.prototype.login = function(doc){
 		return data;
 	})
 }
-crud.prototype.create = function(id,body){
+crud.prototype.create = function(id,body,sync){
 
 	this.method.body = JSON.stringify(body);
 	this.method.method = "PUT";
 	var req = this.url+id;
+	if(sync){
+		var request = new XMLHttpRequest();
+		request.open('PUT', req, false);  // `false` makes the request synchronous
+		request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+		request.send(this.method.body);
+		return new Promise(function(resolve,reject){
+			resolve({status:request.status,text:request.responseText});
+		})
+	}
 	return send(req,this.method).then(function(data){
 		return data;
 	})
 
 }
 crud.prototype.read = function(query,doc,func,params){
-
 	this.method.method = 'GET';
 	delete this.method.body;
 	var req = this.url+'_design/'+doc+'/_'+query+'/'+func;
 	req = tools.querystring(req,params);
+	return send(req,this.method).then(function(data){
+		return data;
+	})
+}
+crud.prototype.post = function(query,doc,func,body){
+	this.method.method = 'POST';
+	this.method.body=JSON.stringify(body);
+	var req = this.url+'_design/'+doc+'/_'+query+'/'+func;
 	return send(req,this.method).then(function(data){
 		return data;
 	})

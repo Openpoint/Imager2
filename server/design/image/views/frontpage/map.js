@@ -1,7 +1,6 @@
 function (doc) {
 	var biggest = 0;
 	var image;
-
 	var images = doc.images.some(function(img){
 
 		if(!img.deleted && img.front){

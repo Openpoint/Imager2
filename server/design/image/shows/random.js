@@ -2,15 +2,21 @@ function(doc, req) {
 	if(!doc) {
 		return {body:JSON.stringify({error:'no doc'})}
 	}else{
-		var images = doc.images.filter(function(im){
-			return im.size > 250000 && im.size < 4000000 && im.src && !im.deleted;
+		var body = JSON.parse(req.body);
+		var index = body.value;
+		var image;
+		doc.images.some(function(im){
+			if(im.index === index){
+				image = im;
+				image.parent = doc.id;
+				if(!image.url) image.url = doc.link;
+				if(!image.alt || !image.alt.length) image.alt = doc.description;
+				if(!image.alt || !image.alt.length) image.alt = doc.title;
+
+				return true;
+			}
+			return false;
 		})
-		if(!images.length) return{body:JSON.stringify({error:'no images'})};
-		var random = Math.floor((Math.random() * images.length));
-		var image = images[random];
-		if(!image.url) image.url = doc.link;
-		if(!image.alt || !image.alt.length) image.alt = page.description;
-		if(!image.alt || !image.alt.length) image.alt = page.title;
 		return {body:JSON.stringify(image)}
 	}
 }

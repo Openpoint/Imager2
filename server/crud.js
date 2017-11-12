@@ -76,7 +76,16 @@ var crud = function(app){
 		}
 
 	})
-
+	app.post('/:action/*',function(req,res,next){
+		var url = couch+req.params.action+'/'+req.params[0];
+		request.get({
+			body:req.body,
+			url:url,
+			json:true,
+		},function(err,resp,body){
+			res.send(body)
+		})
+	})
 	app.put('/:id',function(req,res,next){
 		request.get({
 			//first check if the page already exists
@@ -104,7 +113,7 @@ var crud = function(app){
 					res.send(req.body)
 				})
 			}
-			console.log(err);
+			//console.log(err);
 		})
 	})
 

@@ -19,7 +19,7 @@ class Controls extends Component {
 
 		return(
 			<div className='controls'>
-				<div className='extra' style={{fontSize:".85em"}}>
+				<div className='extra left' style={{fontSize:".85em"}}>
 					<div className='icon'>1</div>
 					<div className='icon'>2</div>
 					<div className='icon'>3</div>
@@ -43,7 +43,7 @@ class Controls extends Component {
 					</div>
 				</div>
 
-				<div className='extra'>
+				<div className='extra right'>
 					<div className='icon' onClick={()=>tools.scrolltop()}><FontAwesome name='arrow-up' /></div>
 				</div>
 			</div>
@@ -69,13 +69,20 @@ export class Footer extends Component {
 	}
 	getPageList(){
 		var self = this;
+
 		crud.read('view','image','list',{descending:true}).then(function(data){
+			console.log(data);
 			var pages = data.rows.map(function(p){
 				return p.value;
 			})
 			self.pages = pages;
 			self.G('pages',pages);
 		})
+
+		crud.read('view','image','random').then(function(data){
+			self.G('images',data.rows);
+		})
+
 	}
 	nav(dir){
 		var list = this.pages;

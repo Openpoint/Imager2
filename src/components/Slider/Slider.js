@@ -83,6 +83,43 @@ export class Slider extends Component {
 		var i,len,index;
 		var self = this;
 		if(this.state.random||force){
+			len = this.random.length;
+			if(typeof(this.state.rindex) === 'undefined'){
+				index = -1;
+			}else{
+				index = this.state.rindex
+			}
+			dir === 'r'?i=index+1:i=index-1;
+			if(i<0) i = len;
+			if(i>len) i=0;
+			if(this.random[i]){
+				this.aniout();
+				this.setState({
+					rindex:i,
+					auto:auto||this.state.auto
+				})
+			}else{
+				var images = this.G('images');
+				var random = Math.floor((Math.random() * images.length));
+				var image = images[random];
+				this.p.random = crud.post('show','image','random/'+image.id,image).then(function(im){
+
+					if(!im || image.error){
+						self.slide(dir)
+						return;
+					}
+					self.random.push(im);
+					self.aniout();
+					self.setState({
+						rindex:i,
+						auto:auto||self.state.auto
+					})
+				},function(err){
+					console.error(err);
+				})
+			}
+
+			/*
 			if(this.seen.length === this.G('pages').length) this.seen = [];
 			var pages = this.G('pages').filter(function(i){
 				return self.seen.indexOf(i) === -1;
@@ -122,6 +159,7 @@ export class Slider extends Component {
 					console.error(err);
 				})
 			}
+			*/
 			return;
 		}
 		this.aniout();

@@ -61,7 +61,6 @@
 	position:relative;
 	display:block;
 	padding:5px;
-	break-inside: avoid-column;
 	z-index:1;
 	box-sizing: border-box;
 	width:100%;
@@ -84,7 +83,13 @@
 	height:auto;
 	background:var(--color1);
 }
-
+#wall .image .inner{
+	position:absolute;
+	top:0;
+	left:0;
+	right:0;
+	bottom:0;
+}
 #wall .image .inner[data-vis='false']{
 	display:none;
 	visibility:hidden;
@@ -116,9 +121,7 @@
 	border-radius:5px;
 	overflow:hidden;
 	background:var(--color1);
-	opacity:.5;
 	transition:opacity .5s;
-
 }
 
 #wall .ifront{

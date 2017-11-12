@@ -14,9 +14,8 @@ export class Image extends Component {
 		this.imonerror = this.imonerror.bind(this);
 		this.makecanvas = this.makecanvas.bind(this);
 		this.loaded = 'loading';
-		//this.out = true;
+		this.ix = this.props.index;
 		this.vis = false;
-		this.index = this.props.index;
 		this.state = {
 			loaded:'loading',
 			front:this.props.image.front,
@@ -24,25 +23,28 @@ export class Image extends Component {
 		}
 	}
 	imonload(){
-		console.log('loaded');
-		if(this.finished || !this.state.load) return;
+		if(this.finished || !this.state.load || this.abort) return;
 		this.finished = true;
 		this.makecanvas();
+		/*
 		this.I.onload = null;
 		this.I.onerror = null;
 		this.I=null;
+		*/
 		this.props.next();
 		this.setState({
 			loaded:'loaded'
 		});
 	}
 	imonerror(){
-		if(this.finished || !this.state.load) return;
+		if(this.finished || !this.state.load || this.abort) return;
 		this.finished = true;
+		/*
 		this.I.onload = null;
 		this.I.onerror = null;
 		this.I=null;
 		this.CTX = null;
+		*/
 		this.canvas = null;
 		this.props.next();
 		this.setState({
@@ -63,9 +65,17 @@ export class Image extends Component {
 		if(event) event.stopPropagation();
 		tools.getDataUri(url);
 	}
-
+	componentWillReceiveProps(nextProps){
+		this.ix = nextProps.index;
+	}
 	componentWillUpdate(nextProps, nextState){
 		if(!nextState.load){
+			this.CTX = null;
+			this.I = null;
+			this.canvas = null;
+			this.abort = true;
+
+			/*
 			this.canvas = null;
 			this.CTX = null;
 			if(this.I){
@@ -73,9 +83,14 @@ export class Image extends Component {
 				this.I.onerror = null;
 			}
 			this.I = null;
+			*/
+		}else{
+			this.abort = false;
 		}
 	}
 	componentWillUnmount(){
+		this.abort = true;
+		/*
 		this.canvas = null;
 		this.CTX = null;
 		if(this.I){
@@ -83,6 +98,7 @@ export class Image extends Component {
 			this.I.onerror = null;
 		}
 		this.I = null;
+		*/
 	}
 
 	render(){
@@ -90,7 +106,6 @@ export class Image extends Component {
 		this.props.image.info = this.props.image.title||''
 		if(this.props.image.description) this.props.image.info +=' | '+this.props.image.description;
 		var filetype = tools.filetype(this.props.image.src);
-		//if(!this.index) console.error('render',this.state.load,this.state.loaded);
 		if(this.G('state').Context === 'front'){
 			return(
 				<div className={[this.state.loaded,'inner'].join(' ')} onClick = {()=>this.G('history').push("/page/"+this.props.image.parent)}>
@@ -140,12 +155,12 @@ export class Image extends Component {
 						</a>
 						<Tooltip message = {tools.sitename(this.props.image.parenturl)} position = 'top' />
 					</div>}
-					<div className='index opt'>{this.props.index}</div>
+					<div className='index opt'>{this.ix}</div>
 				</div>
 			)
 		}else{
 			return(
-				<div className={[this.state.loaded,'inner'].join(' ')} onClick = {()=>{this.G('slideshow')(this.index)}} >
+				<div className={[this.state.loaded,'inner'].join(' ')} onClick = {()=>{this.G('slideshow')(this.ix)}} >
 					{this.state.loaded === 'loading' && filetype !== 'gif' &&(
 							<div className = 'spinner opt'>
 								<FontAwesome name = 'cog' spin size = '2x' />
@@ -193,29 +208,29 @@ export class Image extends Component {
 							<Tooltip message = 'Reverse image lookup' position='top' />
 						</div>}
 
-						{this.props.image.url && this.props.image.urltitle && <div className='control ttParent'  onClick={(event)=>{event.stopPropagation()}}>
+						{this.props.image.url && this.props.image.urltitle && <div className='control ttParent' onClick={(event)=>{event.stopPropagation()}}>
 							<a href={this.props.image.url} target='_blank'><FontAwesome name='external-link' /></a>
 							<Tooltip message = {'Visit page at: '+this.props.image.urltitle} position='top' />
 						</div>}
 
 						{!this.state.front && !this.props.image.deleted && (this.G('state').loggedin||this.props.image.temp) && (
-							<div className='control ttParent' onClick={(event)=>{this.G('toFront')(event,this.index)}}  >
+							<div className='control ttParent' onClick={(event)=>{event.stopPropagation();this.G('toFront')(this.ix)}}  >
 								<FontAwesome name='thumb-tack ' />
 								<Tooltip message = 'Set as Front Image'  position='top' />
 							</div>
 						)}
 						<div className='control ttParent' >
-							<a href={this.props.image.src} download target='_blank'><FontAwesome name='download' /></a>
+							<a href={this.props.image.src} download target='_blank' onClick={(event)=>{event.stopPropagation()}}><FontAwesome name='download' /></a>
 							<Tooltip message = 'Download Image' position='top' />
 						</div>
 						{(this.G('state').loggedin||this.props.image.temp) && (
-							<div className='control ttParent' onClick={(event)=>{this.G('deleteSingle')(event,this.index,this)}} >
+							<div className='control ttParent' onClick={(event)=>{event.stopPropagation();this.G('deleteSingle')(this.ix)}} >
 								<FontAwesome name={this.props.image.deleted?'check':'times'} />
 								<Tooltip message = {this.props.image.deleted?'Restore Image':'Delete Image'} position='top' />
 							</div>
 						)}
 					</div>}
-					<div className='index opt'>{this.props.index}</div>
+					<div className='index opt'>{this.ix}</div>
 				</div>
 			)
 		}

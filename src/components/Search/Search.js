@@ -29,9 +29,7 @@ const placeholders = {
 		message:'Search WikipediA',
 		parse:function(val){
 			if(val.indexOf('http')===0) return false;
-			console.error(val)
 			val = val.split(' ').join('+');
-			console.error(val)
 			return 'https://en.wikipedia.org/w/index.php?title=Special:Search&limit=300&offset=0&ns=6&profile=images&search='+val
 			//return 'https://500px.com/search?q='+val+'&type=photos&sort=relevance'
 		}

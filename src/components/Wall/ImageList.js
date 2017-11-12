@@ -26,9 +26,8 @@ export class ImageList extends Component {
 			trigger:false
 		};
 		this.p={};
-		this.timeouts = {
-			qpace:100
-		};
+		this.qpace = 100;
+		this.timeouts = {};
 		this.ims = {};
 		this.xMasonry = {};
 		this.q = [];
@@ -46,13 +45,13 @@ export class ImageList extends Component {
 	blocks(){
 		var  l = Object.keys(this.xMasonry.state.blocks).length;
 		this.l2 = Object.keys(this.ims).length;
-		if(!this.l2||!l){
+		if(!this.l2||!l||this.l2!==l){
 			var self = this;
 			this.timeouts.bto = setTimeout(function(){
 				self.blocks()
 			},100)
 		}else{
-			this.blocksize = document.getElementById('masonry').getBoundingClientRect();
+			if(!this.blocksize) this.blocksize = document.getElementById('masonry').getBoundingClientRect();
 			this.lazygo();
 		}
 	}
@@ -63,7 +62,7 @@ export class ImageList extends Component {
 		var self = this;
 		this.timeouts.q = setTimeout(function(){
 			self.queue();
-		},this.timeouts.qpace)
+		},this.qpace)
 	}
 	//The timed scroll trigger handler for window onscroll
 	imload(){
@@ -85,17 +84,20 @@ export class ImageList extends Component {
 	lazygo(){
 		if(this.G('state').Context === 'front') this.G('frontscroll',window.scrollY);
 		this.oldy = window.scrollY;
-		if(!this.ims) return;
+		//if(!this.ims) return;
 		var self = this;
 		var height = window.innerHeight;
-		var st = window.scrollY-self.blocksize.top;
-		var blocks = this.xMasonry.state.blocks;
+		var st = Math.round(window.scrollY-self.blocksize.top);
 		var active = [];
 		var edge = [];
-		Object.keys(blocks).forEach(function(key,index){
+		var blocks = this.xMasonry.state.blocks;
+		var blist = Object.keys(blocks);
+		if(!blist.length) return;
+		blist.forEach(function(key,index){
 			var block = blocks[key]
-			var top = block.top-st;
+			var top = Math.round(block.top-st);
 			var bottom = top+block.height;
+
 			var image = self.ims[key];
 			image.newstate = {}
 			var vis = (bottom > (0-height) && top < (height*2))?true:false;
@@ -105,15 +107,17 @@ export class ImageList extends Component {
 				var id = image.props.image.index;
 				document.getElementById(id).setAttribute('data-vis',vis)
 			}
+
 			if(f){
-				active.push({index:image.index,id:image.props.image.index});
+				active.push({index:image.ix,id:image.props.image.index});
 			}else if(vis){
-				edge.push({index:image.index,id:image.props.image.index});
+				edge.push({index:image.ix,id:image.props.image.index});
 			}
 		})
+
 		this.range = tools.getrange(active.concat(edge),this.rangesize);
 		edge.sort(function(a,b){
-			return self.scrolldir==='down'?a.index-b.index:b.index-a.index
+			return self.scrolldir==='down'?a.ix-b.ix:b.ix-a.ix
 		});
 		active = active.concat(edge);
 		this.q=active.map(function(im){
@@ -123,7 +127,7 @@ export class ImageList extends Component {
 		clearTimeout(self.timeouts.q)
 		this.timeouts.q = setTimeout(function(){
 			self.queue(true);
-		},this.timeouts.qpace)
+		},this.qpace)
 	}
 	//handle the image rendering priority queue
 	queue(priority){
@@ -133,8 +137,8 @@ export class ImageList extends Component {
 		this.q=this.q.filter(function(key){
 			var image = self.ims[key];
 			if(priority){
-				if(image.props.index < self.qrange.b) self.qrange.b = image.props.index;
-				if(image.props.index > self.qrange.t) self.qrange.t = image.props.index;
+				if(image.ix < self.qrange.b) self.qrange.b = image.ix;
+				if(image.ix > self.qrange.t) self.qrange.t = image.ix;
 			}
 			if(!image.finished && !image.gone){
 				return true;
@@ -147,7 +151,7 @@ export class ImageList extends Component {
 		}
 		if(!this.q.length){
 			Object.keys(this.ims).forEach(function(key){
-				var i = self.ims[key].props.index;
+				var i = self.ims[key].ix;
 				if(self.ims[key].gone && (i < self.range.bottom || i > self.range.top)){
 					self.ims[key].gone=false;
 					self.ims[key].finished=false;
@@ -170,8 +174,8 @@ export class ImageList extends Component {
 			if(this.q.length){
 				clearTimeout(this.timeouts.q);
 				this.timeouts.q = setTimeout(function(){
-					self.queue(true);
-				},this.timeouts.qpace)
+					self.queue();
+				},this.qpace)
 			}
 			return;
 		}
@@ -179,9 +183,7 @@ export class ImageList extends Component {
 		this.q.some(function(key,i){
 			var stop = i >= self.batch;
 			self.ims[key].gone = true;
-			self.ims[key].setState({load:true},function(){
-				console.log('go-q')
-			});
+			self.ims[key].setState({load:true});
 			out++;
 			return stop;
 		})
@@ -191,7 +193,7 @@ export class ImageList extends Component {
 	exit(){
 		this.ims = null;
 		if(this.G('page').temp && !this.G('tempdeleted')){
-			this.save();
+			this.save(true);
 			return true;
 			//tools.sleep(1000);
 		}
@@ -199,7 +201,7 @@ export class ImageList extends Component {
 	}
 
 	//save a new page
-	save(){
+	save(async){
 		var self = this;
 		var page;
 		var temp = (this.G('page').temp && !this.G('tempdeleted'));
@@ -213,21 +215,23 @@ export class ImageList extends Component {
 				im.front = im.front?true:false;
 				return im;
 			});
-			crud.create(page.id,page).then(function(){
-				self.G('temp',false);
-				console.warn('saved new page');
-				self.G('getPageList')();
-				self.G('isloading')(true,'front');
+			crud.create(page.id,page,async).then(function(res){
+				if(!async){
+					self.G('temp',false);
+					console.warn('saved new page');
+					self.G('getPageList')();
+					self.G('isloading')(true,'front');
+				}
 			});
 		}
 		page = null;
 		this.G('page',null);
 		this.G('tempdeleted',false);
 	}
-	deleteSingle(event,index){
-		if(event) event.stopPropagation();
+	deleteSingle(index){
 		var ref = this.images[index].index*1;
-		this.images.splice(index,1);
+		delete this.ims[ref];
+		//this.images.splice(index,1);
 		var page = this.G('page')
 		page.images = page.images.map(function(im){
 			if(im.index*1 === ref){
@@ -240,17 +244,11 @@ export class ImageList extends Component {
 		this.p.delete = crud.update('image','delete-single',page.id,{imageid:ref}).then(function(){},function(err){
 			console.error(err);
 		});
-		var rem = page.images.filter(function(im){return !im.deleted}).length;
-		if(!rem){
-			this.G("noims")(page);
-			return;
-		}
 		this.setState({
 			trigger:this.state.trigger?false:true
 		});
 	}
-	toFront(event,index){
-		if(event) event.stopPropagation();
+	toFront(index){
 		var page = this.G('page');
 		var ref = this.images[index].index*1;
 		this.p.tofront = crud.update('image','to-front',page.id,{imageid:ref}).then(function(){},function(err){
@@ -268,6 +266,7 @@ export class ImageList extends Component {
 				})
 			}
 		})
+
 		page.images = page.images.map(function(im){
 			if(im.index*1 === ref){
 				im.front = true;
@@ -288,11 +287,10 @@ export class ImageList extends Component {
 		this.ims = null;
 		this.xMasonry = null;
 		this.q = null;
-		this.save(true);
+		this.save();
 	}
 
 	componentWillReceiveProps(nextProps){
-
 		if(this.G('state').loggedin !== this.state.loggedin) this.setState({
 			loggedin:this.G('state').loggedin
 		});
@@ -305,13 +303,14 @@ export class ImageList extends Component {
 		}
 		return update;
 	}
-
+	componentDidUpdate(){
+		if(!this.images.length) this.G("noims")();
+	}
 	render(){
 		var style = window.getComputedStyle(document.getElementById("wall"), null);
 		var w = (Math.floor(style.width.replace('px','')*1/40));
 		var self = this;
 		console.error('render imagewall')
-
 		this.images = tools.imageSort(this.G('page').images,this.G('state').Context);
 		var images = this.images.map(function(image,index){
 			//if(!self.xblocks[image.index]){
@@ -322,7 +321,7 @@ export class ImageList extends Component {
 							<div className='spacer' style={{height:0,marginTop:100/image.ratio+'%'}}></div>
 						</div>
 						<Image w={w} index = {index} image = {image} Global = {self.G} next = {self.next} ref = {(x)=>{
-							if(x){
+							if(x && !self.ims[image.index]){
 								self.ims[image.index]=x;
 							}
 						}} />
@@ -333,6 +332,9 @@ export class ImageList extends Component {
 			//self.ims[image.index].index = index;
 			//return self.xblocks[image.index]
 		})
+		if(!images.length){
+			return null;
+		}
 		return(
 			<div  id = 'masonry'>
 				{images.length && <XMasonry targetBlockWidth = {w} smartUpdate={false} updateOnFontLoad={false} updateOnImagesLoad={false}  ref={(x)=>{
