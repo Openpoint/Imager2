@@ -1,32 +1,8 @@
 window.imager_tools = function(){
 	var i$;
 	var self = this;
-	this.isImage = function(href){
-		if(!href) return false;
-		var ext = href.split('?')[0];
-		ext = ext.split('.');
-		ext=ext.pop();
-		if(ext && ['jpg','jpeg','png','gif'].indexOf(ext.toLowerCase()) > -1){
-			return href;
-		}else{
-			return false;
-		}
-	},
-	this.fix = function(href){
-		if(href.indexOf('data:image')===0) return href;
-		if(href.indexOf('http')!==0){
-			if(href.indexOf('//')===0){
-				href = href.replace('//','');
-				href = 'http://'+href;
-			}else{
-				href = window.location.href+href
-			}
-		}
-		if(this.isImage(href)) href = href.split('?')[0];
-		return href;
-	},
-	this.scroll = function(wh,dir,oh,resolve,count){
 
+	this.scroll = function(wh,dir,oh,resolve,count){
 		var h;
 		var scroll;
 		var to = 1000;
@@ -114,6 +90,30 @@ window.imager_tools = function(){
 		}
 		return true;
 	},
+	this.isImage = function(href){
+		if(!href) return false;
+		var ext = href.split('?')[0];
+		ext = ext.split('.');
+		ext=ext.pop();
+		if(ext && ['jpg','jpeg','png','gif'].indexOf(ext.toLowerCase()) > -1){
+			return href;
+		}else{
+			return false;
+		}
+	},
+	this.fix = function(href){
+		if(href.indexOf('data:image')===0) return href;
+		if(href.indexOf('http')!==0){
+			if(href.indexOf('//')===0){
+				href = href.replace('//','');
+				href = 'http://'+href;
+			}else{
+				href = window.location.href+href
+			}
+		}
+		if(this.isImage(href)) href = href.split('?')[0];
+		return href;
+	},
 	this.mod = function(src){
 		if(!src) return false;
 		if(src.indexOf('url(')===0){
@@ -138,12 +138,10 @@ window.imager_tools = function(){
 				src = decodeURIComponent(src);
 			}
 		}
-		if(this.site==='imgur'){
-			//src=src.split('.');
-			//src[src.length-2] = src[src.length-2].slice(0.-1);
-			//src = src.join('.');
-			//console.log(src)
+		if(this.site==='magnumphotos' && src.indexOf('//content.magnumphotos')!==-1){
+			src = src.replace('//content.magnumphotos','//www.magnumphotos')
 		}
+		
 		if(src.indexOf('wikimedia.org/')!==-1 && src.indexOf('px-')!==-1 && src.indexOf('thumb/')!==-1){
 			var file = src.split('/');
 			file.pop();

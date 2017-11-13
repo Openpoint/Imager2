@@ -176,7 +176,7 @@ export class Wall extends Component {
 			this.G('allims',allims);
 		}
 		if(this.G('page') && this.G('page').images) page.images = page.images.concat(this.G('page').images)
-		page.images = tools.imageSort(page.images,'page');
+		//page.images = tools.imageSort(page.images,'page');
 		this.wall(page);
 	}
 	noims(page){
@@ -193,10 +193,11 @@ export class Wall extends Component {
 		this.G('isloading')(true,'page');
 	}
 	wall(page){
-
+		/*
 		if(page.images) page.images = page.images.filter(function(im){
 			return !im.deleted;
 		})
+		*/
 		if(!page.images || !page.images.length){
 			this.noims(page);
 			return;
@@ -214,8 +215,13 @@ export class Wall extends Component {
 	}
 
 	home(images){
+		/*
 		this.G('page',{
 			images:tools.imageSort(images,'front')||[],
+		});
+		*/
+		this.G('page',{
+			images:images
 		});
 		this.setState({
 			refresh:false,
@@ -237,7 +243,6 @@ export class Wall extends Component {
 			setTimeout(function(){
 				window.scrollTo(0,self.G('frontscroll'));
 			})
-
 		}
 	}
 	componentDidMount(){

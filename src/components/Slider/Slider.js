@@ -118,48 +118,6 @@ export class Slider extends Component {
 					console.error(err);
 				})
 			}
-
-			/*
-			if(this.seen.length === this.G('pages').length) this.seen = [];
-			var pages = this.G('pages').filter(function(i){
-				return self.seen.indexOf(i) === -1;
-			});
-			var random = Math.floor((Math.random() * pages.length));
-			this.seen.push(pages[random]);
-
-			len = this.random.length;
-			if(typeof(this.state.rindex) === 'undefined'){
-				index = -1;
-			}else{
-				index = this.state.rindex
-			}
-			dir === 'r'?i=index+1:i=index-1;
-			if(i<0) i = len;
-			if(i>len) i=0;
-			if(this.random[i]){
-				this.aniout();
-				this.setState({
-					rindex:i,
-					auto:auto||this.state.auto
-				})
-			}else{
-				this.p.random = crud.read('show','image','random/'+pages[random]).then(function(image){
-					if(!image || image.error){
-						self.slide(dir)
-						return;
-					}
-					image.parent = pages[random];
-					self.random.push(image);
-					self.aniout();
-					self.setState({
-						rindex:i,
-						auto:auto||self.state.auto
-					})
-				},function(err){
-					console.error(err);
-				})
-			}
-			*/
 			return;
 		}
 		this.aniout();

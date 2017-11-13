@@ -49,7 +49,6 @@ export class Image extends Component {
 		this.props.next();
 		this.setState({
 			loaded:'error',
-			load:false
 		});
 	}
 	//put an image to canvas
@@ -134,7 +133,7 @@ export class Image extends Component {
 							if(canvas && !this.canvas) this.canvas=canvas;
 							if(this.canvas && this.I && this.I.complete) this.imonload();
 						}}/>}
-						{filetype === 'gif' && this.state.loaded === 'loaded'(
+						{filetype === 'gif' && this.state.loaded === 'loaded' && (
 							<div className='opt'>
 								<img alt='' src = {this.props.image.src} className = 'gif' />
 								<div className = 'gifplay'>
@@ -188,7 +187,7 @@ export class Image extends Component {
 							if(canvas && !this.canvas) this.canvas=canvas;
 							if(this.canvas && this.I && this.I.complete) this.imonload();
 						}}/>}
-						{filetype === 'gif' && (
+						{filetype === 'gif' && this.state.loaded === 'loaded' && (
 							<div className='opt'>
 								<img alt='' src = {this.props.image.src} className = 'gif' />
 								<div className = 'gifplay'>

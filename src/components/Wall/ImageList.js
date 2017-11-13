@@ -29,7 +29,6 @@ export class ImageList extends Component {
 		this.qpace = 100;
 		this.timeouts = {};
 		this.ims = {};
-		this.xMasonry = {};
 		this.q = [];
 		this.oldy = 0;
 		this.batch = 10;
@@ -87,7 +86,7 @@ export class ImageList extends Component {
 		//if(!this.ims) return;
 		var self = this;
 		var height = window.innerHeight;
-		var st = Math.round(window.scrollY-self.blocksize.top);
+		var st = Math.round(window.scrollY-document.getElementById('wall').offsetTop+20);
 		var active = [];
 		var edge = [];
 		var blocks = this.xMasonry.state.blocks;
@@ -114,7 +113,7 @@ export class ImageList extends Component {
 				edge.push({index:image.ix,id:image.props.image.index});
 			}
 		})
-
+		if(!active.length) console.error(self.blocksize.top);
 		this.range = tools.getrange(active.concat(edge),this.rangesize);
 		edge.sort(function(a,b){
 			return self.scrolldir==='down'?a.ix-b.ix:b.ix-a.ix
@@ -157,7 +156,7 @@ export class ImageList extends Component {
 					self.ims[key].finished=false;
 					self.ims[key].setState({
 						load:false,
-						loaded:'loading'
+						loaded:self.ims[key].state.loaded==='error'?'error':'loading'
 					})
 					return;
 				}
@@ -191,13 +190,19 @@ export class ImageList extends Component {
 	}
 	//handler for browser window exiting before page is saved
 	exit(){
+		window.removeEventListener('scroll',this.imload);
+		tools.cancel(this.p,'p');
+		tools.cancel(this.timeouts,'to');
+		this.p=null;
+		this.timeouts = null;
 		this.ims = null;
+		this.xMasonry = null;
+		this.q = null;
+
 		if(this.G('page').temp && !this.G('tempdeleted')){
 			this.save(true);
-			return true;
-			//tools.sleep(1000);
 		}
-		return false;
+		this.setState({exit:true})
 	}
 
 	//save a new page
@@ -307,6 +312,7 @@ export class ImageList extends Component {
 		if(!this.images.length) this.G("noims")();
 	}
 	render(){
+		if(this.state.exit) return null;
 		var style = window.getComputedStyle(document.getElementById("wall"), null);
 		var w = (Math.floor(style.width.replace('px','')*1/40));
 		var self = this;
@@ -338,7 +344,7 @@ export class ImageList extends Component {
 		return(
 			<div  id = 'masonry'>
 				{images.length && <XMasonry targetBlockWidth = {w} smartUpdate={false} updateOnFontLoad={false} updateOnImagesLoad={false}  ref={(x)=>{
-					if(x){
+					if(x && !this.xMasonry){
 						this.xMasonry = x;
 						this.blocks();
 					}

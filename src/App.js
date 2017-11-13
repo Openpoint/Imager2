@@ -11,7 +11,7 @@ import {Modal} from './components/Modal/Modal.js';
 import {Install} from './components/Install/Install.js';
 import crud from './modules/crud.js';
 import tools from './modules/tools.js';
-console.log(process.env);
+
 crud.set(process.env.API_PORT,process.env.NODE_ENV);
 
 const title = 'Imager';
@@ -82,12 +82,9 @@ class App extends Component {
 	}
 	close(){
 		window.removeEventListener('beforeunload',this.close);
-		var sleep = this.Glob.exit();
+		this.Glob.exit();
 		this.Glob = null;
-		this.setState({
-			exit:true
-		})
-		if(sleep) tools.sleep(1000);
+		this.setState({exit:true})
 	}
 	Global(name,f){
 		if(!name && typeof f ==='undefined') return false;
@@ -146,10 +143,7 @@ class App extends Component {
 			})
 		}
 	}
-	componentWillUnmount(){
-		console.log('App is unmounting');
-		tools.sleep(1000);
-	}
+
 	shouldComponentUpdate(nextProps,nextState){
 		if(this.Glob.temp && nextState.Context === 'front') return false;
 		var up = (
@@ -165,7 +159,7 @@ class App extends Component {
 
 	render() {
 		//console.log('Render the App: id:'+this.location.pathname+' loggedin:'+this.state.loggedin+' isloading:'+this.state.isloading)
-		if(!this.state.install||this.state.exit) return <div></div>
+		if(!this.state.install||this.state.exit) return null;
 		if(this.state.install.installed) return (
 			<div id="App" className={[this.state.Context,this.state.isloading?'isloading':null].join(' ')}>
 				<div id='header'>
@@ -181,7 +175,6 @@ class App extends Component {
 				)} />
 				<Footer Global = {this.Global} />
 				<Modal Global = {this.Global} />
-				<img src='/blank.png' alt = "" />
 			</div>
 		);
 		return(

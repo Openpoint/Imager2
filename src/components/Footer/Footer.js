@@ -71,7 +71,6 @@ export class Footer extends Component {
 		var self = this;
 
 		crud.read('view','image','list',{descending:true}).then(function(data){
-			console.log(data);
 			var pages = data.rows.map(function(p){
 				return p.value;
 			})

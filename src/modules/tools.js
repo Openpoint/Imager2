@@ -25,11 +25,12 @@ tools.prototype.imageSort = function(images,context){
 		if(!index[img.index]){
 			index[img.index]=true;
 			return img;
-		}else{
-			console.error('dupe:' +i);
+		}else if(context === 'front'){
 			img.index = img.index*10+i
 			return img;
 		}
+		img.deleted = true;
+		return img;
 	})
 	images = images.filter(function(im){
 		return !im.deleted;
