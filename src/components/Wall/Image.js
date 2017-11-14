@@ -145,14 +145,27 @@ export class Image extends Component {
 					{this.props.image.info && <div className = 'ttParent info opt'>
 						<Tooltip message = {tools.decode(this.props.image.info).substring(0,200)+'...'} position = 'bottom' />
 					</div>}
-
-					{this.props.image.favicon && <div className='favicon ttParent opt' >
+					{this.state.load && this.state.loaded !== 'loading' && this.props.image.favicon && <div className='favicon ttParent opt' >
 						<a href={'http://'+tools.sitename(this.props.image.parenturl)} target = '_blank' onClick = {(event)=>event.stopPropagation()} >
 							<img id={'fav-'+this.props.image.index} src={this.props.image.favicon} alt = 'favicon' data-vis={false} onLoad = {()=>{
 								document.getElementById('fav-'+this.props.image.index).setAttribute('data-vis',true);
 							}}/>
 						</a>
-						<Tooltip message = {tools.sitename(this.props.image.parenturl)} position = 'top' />
+						<Tooltip message = {tools.sitename(this.props.image.parenturl)} position = 'top right' />
+					</div>}
+					{this.state.load && this.state.loaded !== 'loading' && <div className  = 'controls opt'>
+						{this.props.image.src.indexOf('data:')!==0 && <div className='control ttParent' onClick={(event)=>{this.reverse(event,this.props.image.src)}} >
+							<FontAwesome name='google' />
+							<Tooltip message = 'Reverse image lookup' position='top' />
+						</div>}
+						{this.props.image.url && this.props.image.urltitle && <div className='control ttParent' onClick={(event)=>{event.stopPropagation()}}>
+							<a href={this.props.image.url} target='_blank'><FontAwesome name='external-link' /></a>
+							<Tooltip message = {'Image source: '+this.props.image.urltitle} position='top left' width = '200'/>
+						</div>}
+						<div className='control ttParent' >
+							<a href={this.props.image.src} download target='_blank' onClick={(event)=>{event.stopPropagation()}}><FontAwesome name='download' /></a>
+							<Tooltip message = 'Download Image' position='top left' />
+						</div>
 					</div>}
 					<div className='index opt'>{this.ix}</div>
 				</div>
@@ -201,7 +214,7 @@ export class Image extends Component {
 						<Tooltip message = {tools.decode(this.props.image.alt)} position = 'bottom' />
 					</div>}
 
-					{this.state.loaded !== 'loading' && <div className  = 'controls opt'>
+					{this.state.load && this.state.loaded !== 'loading' && <div className  = 'controls opt'>
 						{this.props.image.src.indexOf('data:')!==0 && <div className='control ttParent' onClick={(event)=>{this.reverse(event,this.props.image.src)}} >
 							<FontAwesome name='google' />
 							<Tooltip message = 'Reverse image lookup' position='top' />
@@ -209,7 +222,7 @@ export class Image extends Component {
 
 						{this.props.image.url && this.props.image.urltitle && <div className='control ttParent' onClick={(event)=>{event.stopPropagation()}}>
 							<a href={this.props.image.url} target='_blank'><FontAwesome name='external-link' /></a>
-							<Tooltip message = {'Visit page at: '+this.props.image.urltitle} position='top' />
+							<Tooltip message = {'Visit page at: '+this.props.image.urltitle} position='top' width = '200'/>
 						</div>}
 
 						{!this.state.front && !this.props.image.deleted && (this.G('state').loggedin||this.props.image.temp) && (

@@ -1,4 +1,5 @@
 import React, {Component} from 'react';
+import {Tooltip} from '../Tooltip/Tooltip.js';
 import FontAwesome from 'react-fontawesome';
 import tools from '../../modules/tools.js';
 import crud from '../../modules/crud.js';
@@ -11,11 +12,14 @@ export class Slider extends Component {
 		this.slideshow = this.slideshow.bind(this);
 		this.G('slideshow',this.slideshow);
 		this.slide = this.slide.bind(this);
-		this.interval = 5000;
+		this.show = this.show.bind(this);
+		this.hide = this.hide.bind(this);
+		this.interval = 8000;
 		this.random=[];
 		this.seen = [];
 		this.broken = {};
 		this.p={};
+		this.to={};
 		this.state = {
 			slideshow:false,
 			index:false,
@@ -24,22 +28,24 @@ export class Slider extends Component {
 			random:false
 		};
 		var self = this;
-		window.addEventListener('blur',function(){
+		window.addEventListener('blur',this.blur)
+		window.addEventListener('focus',this.focus)
+		this.blur = function(){
 			tools.nofullscreen();
-			clearTimeout(self.auto);
+			clearTimeout(self.to.auto);
 			self.pause = true;
-		})
-		window.addEventListener('focus',function(){
+		}
+		this.focus = function(){
 			self.pause = false;
-			if(self.state.auto) self.auto = setTimeout(function(){
+			if(self.state.auto) self.to.auto = setTimeout(function(){
 				self.slide('r');
 			},self.interval);
-		})
+		}
 	}
 
 	slideshow(index){
 		if(this.state.slideshow){
-			clearTimeout(this.auto);
+			clearTimeout(this.to.auto);
 			if(this.p.random) this.p.random.cancel();
 			this.setState({
 				slideshow:false,
@@ -52,11 +58,8 @@ export class Slider extends Component {
 			this.old = false;
 			return;
 		}
-		var self = this;
+		this.images = this.G('page').images;
 		if(index === 'front'){
-			this.images = this.G('page').images.filter(function(im){
-				return !im.deleted && !self.broken[im.index];
-			});
 			this.setState({
 				slideshow:true,
 				index:this.G('lastfront')||0,
@@ -66,9 +69,7 @@ export class Slider extends Component {
 				tools.fullscreen('slideshow')
 			})
 		}else{
-			this.images = this.G('page').images.filter(function(im){
-				return !im.deleted && !self.broken[im.index];
-			});
+			this.images = tools.imageSort(this.images,'page');
 			this.setState({
 				slideshow:true,
 				index:index
@@ -159,18 +160,40 @@ export class Slider extends Component {
 			})
 		},10)
 	}
-
-
+	show(){
+		clearTimeout(this.to.hide);
+		this.container.setAttribute('data-hidden',false);
+		this.hide();
+	}
+	hide(){
+		clearTimeout(this.to.hide);
+		if(this.nohide) return;
+		var self = this;
+		this.to.hide = setTimeout(function(){
+			self.container.setAttribute('data-hidden',true);
+		},2000)
+	}
+	componentWillUpdate(nextProps, nextState){
+		if(!nextState.slideshow){
+			clearTimeout(this.to.auto);
+			if(this.p.random) this.p.random.cancel();
+		}else{
+			this.hide();
+		}
+	}
 	componentDidUpdate(prevProps, prevState){
 		if(prevState.random!==this.state.random){
-			clearTimeout(this.auto);
+			clearTimeout(this.to.auto);
 			if(this.p.random) this.p.random.cancel();
 			if(this.state.random) this.slide('r',true);
 		}
 		if(prevState.auto!==this.state.auto){
-			clearTimeout(this.auto);
+			clearTimeout(this.to.auto);
 			if(this.p.random) this.p.random.cancel();
 			if(this.state.auto) this.slide('r');
+		}
+		if(prevState.index!==this.state.index||prevState.rindex!==this.state.rindex||prevState.random!==this.state.random){
+			this.ani('back')
 		}
 	}
 	shouldComponentUpdate(nextProps,nextState){
@@ -182,10 +205,20 @@ export class Slider extends Component {
 		)));
 		return update;
 	}
+	componentDidMount(){
+		this.container = document.getElementById('slideshow');
+		this.alt = document.getElementById('alt');
+	}
+	componentWillUnmount(){
+		window.removeEventListener('blur',this.blur)
+		window.removeEventListener('focus',this.focus)
+		tools.cancel(this.p,'p')
+		tools.cancel(this.to,'to')
+	}
 	render(){
 		var image = false;
 		var oldimage = false;
-		clearTimeout(this.auto);
+		clearTimeout(this.to.auto);
 		if(this.image && !this.error && this.loaded) oldimage = this.image;
 		this.error = false;
 		this.loaded = false;
@@ -197,40 +230,67 @@ export class Slider extends Component {
 			this.image = image;
 		}
 		var busy = document.getElementById('ssbusy')
-		if(busy) busy.setAttribute("active", true);;
+		if(busy) busy.setAttribute("active", true);
+		if(!this.state.random && this.state.slideshow){
+			var top = document.querySelector('#wall .page,#wall .front');
+			if(top){
+				top = top.offsetTop;
+				top = document.querySelector("[data-key='"+image.index+"']").offsetTop+top;
+				window.scrollTo(0,top);
+			}
+		}
 		return(
-			<div id='slideshow' className={this.state.slideshow?'open':'closed'}>
-
+			<div id='slideshow' className={this.state.slideshow?'open':'closed'} data-hidden = {false} onMouseMove = {()=>{this.show()}}>
 				<FontAwesome name='refresh' spin size='3x' id="ssbusy" />
 				<div className='topcontrols'>
 					<div>
-						<FontAwesome name='arrows-alt' size='lg' onClick={()=>{tools.isfullscreen()?tools.nofullscreen():tools.fullscreen('slideshow')}} />
-						{!this.state.auto && <FontAwesome  className='auto off' name='play-circle-o' size='lg' onClick={()=>this.setState({auto:true})} />}
-						{this.state.auto && <FontAwesome className='auto on' name='pause-circle' size='lg' onClick={()=>this.setState({auto:false})} />}
-						<FontAwesome name='random' size='lg' className={['random',this.state.random?'on':'off'].join(' ')} onClick={()=>{
-							this.setState({
-								random:this.state.random?false:true
-							})
-						}}/>
+						<div className = 'ttParent control'>
+							<FontAwesome name='arrows-alt' size='lg' onClick={()=>{tools.isfullscreen()?tools.nofullscreen():tools.fullscreen('slideshow')}} onMouseEnter = {()=>this.nohide = true}  onMouseLeave = {()=>this.nohide = false} />
+							<Tooltip message = "Toggle fullscreen" position='bottom right' />
+						</div>
+						{!this.state.auto && <div className = 'ttParent control'>
+							<FontAwesome  className='auto off' name='play-circle-o' size='lg' onClick={()=>this.setState({auto:true})} onMouseEnter = {()=>this.nohide = true}  onMouseLeave = {()=>this.nohide = false} />
+							<Tooltip message = "Turn autoplay on" position='bottom' />
+						</div>}
+						{this.state.auto && <div className = 'ttParent control'>
+							<FontAwesome className='auto on' name='pause-circle' size='lg' onClick={()=>this.setState({auto:false})} onMouseEnter = {()=>this.nohide = true}  onMouseLeave = {()=>this.nohide = false} />
+							<Tooltip message = "Turn autoplay off" position='bottom' />
+						</div>}
+						<div className = 'ttParent control'>
+							<FontAwesome name='random' size='lg' className={['random',this.state.random?'on':'off'].join(' ')} onMouseEnter = {()=>this.nohide = true}  onMouseLeave = {()=>this.nohide = false} onClick={()=>{
+								this.setState({
+									random:this.state.random?false:true
+								})
+							}}/>
+							<Tooltip message = "Toggle between active page or random images" position='bottom' width = "200"/>
+						</div>
 					</div>
 
 					<div className = 'close'>
-						{(this.state.random||this.state.front) && <FontAwesome name='picture-o' size='lg' onClick={()=>{
-							this.G('history').push('/page/'+image.parent);
-							this.slideshow(false);
-						}} />}
-						<FontAwesome name='google' size='lg' onClick={()=>tools.getDataUri(image.src)} />
-						<FontAwesome name='times' size='2x' onClick={()=>{
-							this.slideshow(false);
-						}} />
+						<div className = 'ttParent control'>
+							{(this.state.random||this.state.front) && <FontAwesome name='picture-o' size='lg' onMouseEnter = {()=>this.nohide = true}  onMouseLeave = {()=>this.nohide = false} onClick={()=>{
+								this.G('history').push('/page/'+image.parent+'?im='+image.index);
+								this.slideshow(false);
+							}} />}
+							<Tooltip message = "Go to Imager page for this image" position='bottom' />
+						</div>
+						<div className = 'ttParent control'>
+							<FontAwesome name='google' size='lg' onMouseEnter = {()=>this.nohide = true}  onMouseLeave = {()=>this.nohide = false} onClick={()=>tools.getDataUri(image.src)} />
+							<Tooltip message = "Reverse image lookup" position='bottom left' />
+						</div>
+						<div className = 'control'>
+							<FontAwesome name='times' size='2x' onMouseEnter = {()=>this.nohide = true}  onMouseLeave = {()=>this.nohide = false} onClick={()=>{
+								this.slideshow(false);
+							}} />
+						</div>
 					</div>
 
 				</div>
-				<FontAwesome name='chevron-left' size='2x' className='control left' onClick={()=>{
+				<FontAwesome name='chevron-left' size='2x' className='control left' onMouseEnter = {()=>this.nohide = true}  onMouseLeave = {()=>this.nohide = false} onClick={()=>{
 					//this.setState({auto:false});
 					this.slide('l')
 				}} />
-				<FontAwesome name='chevron-right' size='2x' className='control right' onClick={()=>{
+				<FontAwesome name='chevron-right' size='2x' className='control right' onMouseEnter = {()=>this.nohide = true}  onMouseLeave = {()=>this.nohide = false} onClick={()=>{
 					//this.setState({auto:false});
 					this.slide('r')
 				}} />
@@ -241,28 +301,42 @@ export class Slider extends Component {
 				)}
 				{this.state.slideshow && image && (
 					<div className='simage front'>
-						<a href = {link} target = '_blank'>
+						<span style={{cursor:'pointer'}} onClick = {()=>{
+							var win = window.open(link, '_blank');
+  							win.focus();
+						}}>
 							<img className = 'ani' src={image.src} alt='' width={image.width} height={image.height} ref = {(im)=>this.im = im}  onLoad = {()=>{
 								document.getElementById('ssbusy').removeAttribute('active');
 								this.ani();
 								this.loaded = true;
 								var self = this;
-								if(this.state.auto && !this.pause) this.auto = setTimeout(function(){
-									self.slide('r');
+								if(this.state.auto && !this.pause) this.to.auto = setTimeout(function(){
+									if(self.state.slideshow && self.state.auto && !self.pause) self.slide('r');
 								},this.interval);
 							}} onError = {()=>{
 								this.broken[image.index]=true;
 								this.error = true;
 								var self = this;
-								if(this.state.auto && !this.pause) this.auto = setTimeout(function(){
-									self.slide('r');
+								if(this.state.auto && !this.pause) this.to.auto = setTimeout(function(){
+									if(self.state.slideshow && self.state.auto && !self.pause) self.slide('r');
 								},500);
 							}}/>
-						</a>
+						</span>
 					</div>
 				)}
 
-				{image.alt && <div className='alt'>{tools.decode(image.alt)}</div>}
+				<div id='alt' className='alt' data-hidden = {this.G("hidealt")}>
+					{image.alt && <div>{tools.decode(image.alt)}</div>}
+					<div className = 'ttParent control altshow'>
+						<FontAwesome name='ban' onClick = {()=>{
+							var hidealt = this.G("hidealt")
+							hidealt?hidealt=false:hidealt=true;
+							this.alt.setAttribute('data-hidden',hidealt);
+							this.G("hidealt",hidealt);
+						}}/>
+						<Tooltip message = "Toggle autohide on image info" position='top right' width = '200'/>
+					</div>
+				</div>
 			</div>
 		)
 	}

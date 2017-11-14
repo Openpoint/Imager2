@@ -3,9 +3,12 @@ import './Tooltip.css';
 
 export class Tooltip extends Component {
 	render(){
+		var width = null;
+		if(this.props.width) width = this.props.width*1;
 		return(
-			<div className = {['tooltip ',this.props.position].join('')} >
-				{this.props.message}
+			<div className = {['tooltip ',this.props.position].join('')}>
+				<div className='arrow'></div>
+				<div className = 'text' style = {{width:width}}> {this.props.message}</div>
 			</div>
 		)
 	}

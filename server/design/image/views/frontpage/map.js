@@ -23,6 +23,8 @@ function (doc) {
 		Object.keys(image).forEach(function(key){
 			if(image.hasOwnProperty(key) && ! returned[key]) returned[key] = image[key];
 		})
+		if(!returned.url) returned.url = doc.link;
+		if(!returned.urltitle) returned.urltitle = doc.title;
 		emit(doc.date,returned);
 	}
 }

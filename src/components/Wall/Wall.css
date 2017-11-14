@@ -74,7 +74,7 @@
 .front #imagesizer{
 	width:20%;
 }
-.front .image .tooltip.bottom{
+.front .image .tooltip.bottom .text{
 	max-width:90%!important;
 	width:90%;
 }
@@ -182,18 +182,22 @@
 	transition:opacity 1s;
 	text-align:center;
 }
+#wall .front .image .controls{
+	left:auto;
+}
 #wall .image .control{
-	margin:5px;
+	margin:3px;
 	display:inline-block;
 	position:relative;
 	box-sizing: border-box;
 	cursor:pointer;
+	font-size:.85em;
 }
 #wall .image .control span{
 	background:rgba(0,0,0,.85);
 	padding:8px;
-	width:18px;
-	height:18px;
+	width:15px;
+	height:15px;
 	border-radius:50%;
 	color:white;
 	display:flex;
@@ -217,7 +221,7 @@
 	width:40px;
 	height:40px;
 	background:rgba(255,255,255,.5);
-	z-index:2;
+	z-index:3;
 	margin:15px;
 	border-radius:50%;
 

@@ -20,9 +20,11 @@ class Controls extends Component {
 		return(
 			<div className='controls'>
 				<div className='extra left' style={{fontSize:".85em"}}>
-					<div className='icon'>1</div>
-					<div className='icon'>2</div>
-					<div className='icon'>3</div>
+					{/*
+						<div className='icon'>1</div>
+						<div className='icon'>2</div>
+						<div className='icon'>3</div>
+					*/}
 				</div>
 				<div className = 'tower'>
 					<div className='top'>

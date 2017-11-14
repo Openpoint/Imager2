@@ -46,10 +46,11 @@
 	justify-content: space-between;
 	z-index:2;
 }
-#slideshow .topcontrols > span, #slideshow .topcontrols > div > span{
+#slideshow .topcontrols .control{
 	display:block;
 	cursor:pointer;
 	margin:0 10px 0 10px;
+	position:relative;
 }
 
 #slideshow .topcontrols > div{
@@ -59,7 +60,7 @@
 #slideshow .random.off,#slideshow .auto.off{
 	opacity:.5;
 }
-#slideshow .control{
+#slideshow span.control{
 	cursor:pointer;
 	position:absolute;
 	top:50%;
@@ -78,6 +79,8 @@
 #slideshow .alt{
 	position:absolute;
 	width:100%;
+	padding:0 40px;
+	box-sizing: border-box;
 	height:4.5%;
 	bottom:0;
 	left:0;
@@ -122,4 +125,23 @@
 }
 #slideshow .back img.ani{
 	opacity:0;
+}
+#slideshow .topcontrols,#slideshow .alt,#slideshow .control{
+	transition:opacity .5s;
+}
+#slideshow[data-hidden='true'] .topcontrols,#slideshow[data-hidden='true'] .alt[data-hidden='true'] ,#slideshow[data-hidden='true'] .control{
+	opacity:0;
+}
+#slideshow[data-hidden='true'],#slideshow[data-hidden='true'] *{
+	cursor:none;
+}
+#slideshow .altshow{
+	padding:10px;
+	cursor:pointer;
+	position:absolute;
+	left:0;
+	bottom:0;
+}
+#slideshow .alt[data-hidden='true'] span{
+	opacity:.5
 }

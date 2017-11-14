@@ -50,7 +50,12 @@ export class ImageList extends Component {
 				self.blocks()
 			},100)
 		}else{
-			if(!this.blocksize) this.blocksize = document.getElementById('masonry').getBoundingClientRect();
+			this.top = document.querySelector('#wall .page,#wall .front').offsetTop;
+			var focus = tools.getURLParameter('im');
+			if(focus){
+				var top = document.querySelector("[data-key='"+focus+"']").offsetTop+this.top;
+				window.scrollTo(0,top);
+			}
 			this.lazygo();
 		}
 	}
@@ -86,7 +91,7 @@ export class ImageList extends Component {
 		//if(!this.ims) return;
 		var self = this;
 		var height = window.innerHeight;
-		var st = Math.round(window.scrollY-document.getElementById('wall').offsetTop+20);
+		var st = Math.round(window.scrollY-this.top);
 		var active = [];
 		var edge = [];
 		var blocks = this.xMasonry.state.blocks;
@@ -113,7 +118,6 @@ export class ImageList extends Component {
 				edge.push({index:image.ix,id:image.props.image.index});
 			}
 		})
-		if(!active.length) console.error(self.blocksize.top);
 		this.range = tools.getrange(active.concat(edge),this.rangesize);
 		edge.sort(function(a,b){
 			return self.scrolldir==='down'?a.ix-b.ix:b.ix-a.ix
@@ -131,6 +135,7 @@ export class ImageList extends Component {
 	//handle the image rendering priority queue
 	queue(priority){
 		if(!this.batch) return;
+
 		var self = this;
 		if(priority) this.qrange={b:this.l2,t:0};
 		this.q=this.q.filter(function(key){
@@ -179,8 +184,9 @@ export class ImageList extends Component {
 			return;
 		}
 		var out = 0;
+		var batch = this.batch;
 		this.q.some(function(key,i){
-			var stop = i >= self.batch;
+			var stop = i >= batch;
 			self.ims[key].gone = true;
 			self.ims[key].setState({load:true});
 			out++;
@@ -195,6 +201,12 @@ export class ImageList extends Component {
 		tools.cancel(this.timeouts,'to');
 		this.p=null;
 		this.timeouts = null;
+		var self = this;
+		Object.keys(this.ims).forEach(function(key){
+			self.ims[key].I = null;
+			self.ims[key].CTX = null;
+			self.ims[key].canvas = null;
+		})
 		this.ims = null;
 		this.xMasonry = null;
 		this.q = null;
