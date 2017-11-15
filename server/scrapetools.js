@@ -141,14 +141,16 @@ window.imager_tools = function(){
 		if(this.site==='magnumphotos' && src.indexOf('//content.magnumphotos')!==-1){
 			src = src.replace('//content.magnumphotos','//www.magnumphotos')
 		}
-		
+		if(this.site==='beetlesandhuxley'){
+			src = src.replace('imagecache/stock-image-medium/','')
+			src = src.replace('imagecache/stock-image-small/','')
+			src = src.replace('imagecache/stock-image-large/','')
+		}
 		if(src.indexOf('wikimedia.org/')!==-1 && src.indexOf('px-')!==-1 && src.indexOf('thumb/')!==-1){
 			var file = src.split('/');
 			file.pop();
 			src = file.join('/');
 			src = src.replace('thumb/','');
-			//file = file[file.length-1].split("px-")[0];
-			//src = src.replace(file+'px-','1200px-');
 		}
 		src = self.fix(src);
 		return src;
