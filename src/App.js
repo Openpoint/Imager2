@@ -8,6 +8,7 @@ import {Search} from './components/Search/Search.js';
 import {Titlebar} from './components/Header/Header.js';
 import {Footer} from './components/Footer/Footer.js';
 import {Modal} from './components/Modal/Modal.js';
+import {Slider} from './components/Slider/Slider.js';
 import {Install} from './components/Install/Install.js';
 import crud from './modules/crud.js';
 import tools from './modules/tools.js';
@@ -83,8 +84,10 @@ class App extends Component {
 	close(){
 		window.removeEventListener('beforeunload',this.close);
 		this.Glob.exit();
-		this.Glob = null;
-		this.setState({exit:true})
+		this.setState({exit:true},()=>{
+			this.Glob = null;
+			console.error('exited')
+		});
 	}
 	Global(name,f){
 		if(!name && typeof f ==='undefined') return false;
@@ -145,7 +148,7 @@ class App extends Component {
 	}
 
 	shouldComponentUpdate(nextProps,nextState){
-		if(this.Glob.temp && nextState.Context === 'front') return false;
+		if(this.Glob && this.Glob.temp && nextState.Context === 'front') return false;
 		var up = (
 			nextState.exit||
 			nextState.reload ||
@@ -175,6 +178,7 @@ class App extends Component {
 				)} />
 				<Footer Global = {this.Global} />
 				<Modal Global = {this.Global} />
+				<Slider Global = {this.Global}/>
 			</div>
 		);
 		return(

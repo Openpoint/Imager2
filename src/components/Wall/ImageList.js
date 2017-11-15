@@ -42,6 +42,7 @@ export class ImageList extends Component {
 	}
 	//check for when masonary has finished the layout and knows all the elements sizes and positions,all images are ready to be loaded
 	blocks(){
+		console.log("start blocks");
 		var  l = Object.keys(this.xMasonry.state.blocks).length;
 		this.l2 = Object.keys(this.ims).length;
 		if(!this.l2||!l||this.l2!==l){
@@ -51,11 +52,13 @@ export class ImageList extends Component {
 			},100)
 		}else{
 			this.top = document.querySelector('#wall .page,#wall .front').offsetTop;
+
 			var focus = tools.getURLParameter('im');
 			if(focus){
 				var top = document.querySelector("[data-key='"+focus+"']").offsetTop+this.top;
 				window.scrollTo(0,top);
 			}
+			console.log('blocks done');
 			this.lazygo();
 		}
 	}
@@ -199,8 +202,6 @@ export class ImageList extends Component {
 		window.removeEventListener('scroll',this.imload);
 		tools.cancel(this.p,'p');
 		tools.cancel(this.timeouts,'to');
-		this.p=null;
-		this.timeouts = null;
 		var self = this;
 		Object.keys(this.ims).forEach(function(key){
 			self.ims[key].I = null;
@@ -240,9 +241,8 @@ export class ImageList extends Component {
 					self.G('isloading')(true,'front');
 				}
 			});
+
 		}
-		page = null;
-		this.G('page',null);
 		this.G('tempdeleted',false);
 	}
 	deleteSingle(index){
@@ -299,14 +299,12 @@ export class ImageList extends Component {
 		window.removeEventListener('scroll',this.imload);
 		tools.cancel(this.p,'p');
 		tools.cancel(this.timeouts,'to');
-		this.p=null;
-		this.timeouts = null;
 		this.ims = null;
 		this.xMasonry = null;
 		this.q = null;
 		this.save();
+		this.G('page',null);
 	}
-
 	componentWillReceiveProps(nextProps){
 		if(this.G('state').loggedin !== this.state.loggedin) this.setState({
 			loggedin:this.G('state').loggedin
@@ -314,6 +312,7 @@ export class ImageList extends Component {
 	}
 
 	shouldComponentUpdate(nextProps, nextState){
+		//if(!this.G('page')||!this.G('page').images||!this.G('page').images.length) return false;
 		var update = this.state.loggedin!==nextState.loggedin||this.G('page').images[0].index!==this.images[0].index || this.state.trigger !== nextState.trigger;
 		if(this.state.loggedin!==nextState.loggedin){
 			this.lazygo();
@@ -331,24 +330,19 @@ export class ImageList extends Component {
 		console.error('render imagewall')
 		this.images = tools.imageSort(this.G('page').images,this.G('state').Context);
 		var images = this.images.map(function(image,index){
-			//if(!self.xblocks[image.index]){
-				var w = tools.getClass(image);
-				return <XBlock key={image.index} width={w}>
-					<div id={image.index} data-vis="false" className='image' >
-						<div className='iback group'>
-							<div className='spacer' style={{height:0,marginTop:100/image.ratio+'%'}}></div>
-						</div>
-						<Image w={w} index = {index} image = {image} Global = {self.G} next = {self.next} ref = {(x)=>{
-							if(x && !self.ims[image.index]){
-								self.ims[image.index]=x;
-							}
-						}} />
+			var w = tools.getClass(image);
+			return <XBlock key={image.index} width={w}>
+				<div id={image.index} data-vis="false" className='image' >
+					<div className='iback group'>
+						<div className='spacer' style={{height:0,marginTop:100/image.ratio+'%'}}></div>
 					</div>
-				</XBlock>
-				//return self.xblocks[image.index];
-			//}
-			//self.ims[image.index].index = index;
-			//return self.xblocks[image.index]
+					<Image w={w} index = {index} image = {image} Global = {self.G} next = {self.next} ref = {(x)=>{
+						if(x && !self.ims[image.index]){
+							self.ims[image.index]=x;
+						}
+					}} />
+				</div>
+			</XBlock>
 		})
 		if(!images.length){
 			return null;
@@ -356,7 +350,7 @@ export class ImageList extends Component {
 		return(
 			<div  id = 'masonry'>
 				{images.length && <XMasonry targetBlockWidth = {w} smartUpdate={false} updateOnFontLoad={false} updateOnImagesLoad={false}  ref={(x)=>{
-					if(x && !this.xMasonry){
+					if(x){
 						this.xMasonry = x;
 						this.blocks();
 					}

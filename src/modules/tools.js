@@ -224,7 +224,6 @@ tools.prototype.scrolltop = function(){
 
 }
 tools.prototype.getURLParameter = function(name) {
-	if(!window.location.search) return null;
-	return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(window.location.search) || [null, ''])[1].replace(/\+/g, '%20')) || null;
+	return decodeURIComponent((new RegExp("[?|&]" + name + "=([^&;]+?)(&|#|;|$)").exec(window.location.search) || [null, ''])[1].replace(/\+/g, '%20')) || null;
 }
 module.exports = new tools();

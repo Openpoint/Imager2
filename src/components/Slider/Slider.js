@@ -175,8 +175,8 @@ export class Slider extends Component {
 	}
 	componentWillUpdate(nextProps, nextState){
 		if(!nextState.slideshow){
-			clearTimeout(this.to.auto);
-			if(this.p.random) this.p.random.cancel();
+			tools.cancel(this.p,'p')
+			tools.cancel(this.to,'to')
 		}else{
 			this.hide();
 		}

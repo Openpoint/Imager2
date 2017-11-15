@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import {ImageList} from './ImageList.js';
 import FontAwesome from 'react-fontawesome';
 import {Tooltip} from '../Tooltip/Tooltip.js';
-import {Slider} from '../Slider/Slider.js';
+
 import SCRAPE from '../../modules/scrape.js';
 import {LoadImages} from './LoadImages.js';
 import crud from '../../modules/crud.js';
@@ -60,6 +60,7 @@ export class Wall extends Component {
 	}
 	update(props){
 		if(!props) props = this.props;
+
 		this.clear()
 
 		this.setState({
@@ -193,11 +194,7 @@ export class Wall extends Component {
 		this.G('isloading')(true,'page');
 	}
 	wall(page){
-		/*
-		if(page.images) page.images = page.images.filter(function(im){
-			return !im.deleted;
-		})
-		*/
+
 		if(!page.images || !page.images.length){
 			this.noims(page);
 			return;
@@ -333,7 +330,7 @@ export class Wall extends Component {
 					<div className='page widgets'>
 						{this.G('page') && this.G('page').images.length && <ImageList Global = {this.G} />}
 					</div>
-					<Slider Global = {this.G}/>
+
 				</div>
 
 			)
@@ -343,7 +340,6 @@ export class Wall extends Component {
 					<div className='front widgets'>
 						{this.G('page') && this.G('page').images.length && <ImageList Global = {this.G} />}
 					</div>
-					<Slider Global = {this.G}/>
 				</div>
 			)
 		}
