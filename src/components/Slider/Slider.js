@@ -14,6 +14,8 @@ export class Slider extends Component {
 		this.slide = this.slide.bind(this);
 		this.show = this.show.bind(this);
 		this.hide = this.hide.bind(this);
+		this.blur = this.blur.bind(this);
+		this.focus = this.focus.bind(this);
 		this.interval = 8000;
 		this.random=[];
 		this.seen = [];
@@ -27,22 +29,28 @@ export class Slider extends Component {
 			auto:false,
 			random:false
 		};
-		var self = this;
 		window.addEventListener('blur',this.blur)
 		window.addEventListener('focus',this.focus)
-		this.blur = function(){
-			tools.nofullscreen();
-			clearTimeout(self.to.auto);
-			self.pause = true;
-		}
-		this.focus = function(){
-			self.pause = false;
-			if(self.state.auto) self.to.auto = setTimeout(function(){
-				self.slide('r');
-			},self.interval);
+
+	}
+	blur(){
+		tools.nofullscreen();
+		if(this.state.auto){
+			this.pause = true;
+			this.setState({auto:false})
 		}
 	}
-
+	focus(){
+		if(this.pause){
+			this.setState({auto:true},()=>{
+				this.pause = false;
+				var self = this;
+				this.to.auto = setTimeout(function(){
+					if(self.state.slideshow && self.state.auto && !self.pause) self.slide('r');
+				},3000);
+			});
+		}
+	}
 	slideshow(index){
 		if(this.state.slideshow){
 			clearTimeout(this.to.auto);
@@ -104,7 +112,6 @@ export class Slider extends Component {
 				var random = Math.floor((Math.random() * images.length));
 				var image = images[random];
 				this.p.random = crud.post('show','image','random/'+image.id,image).then(function(im){
-
 					if(!im || image.error){
 						self.slide(dir)
 						return;
@@ -182,19 +189,14 @@ export class Slider extends Component {
 		}
 	}
 	componentDidUpdate(prevProps, prevState){
-		if(prevState.random!==this.state.random){
-			clearTimeout(this.to.auto);
-			if(this.p.random) this.p.random.cancel();
-			if(this.state.random) this.slide('r',true);
-		}
-		if(prevState.auto!==this.state.auto){
-			clearTimeout(this.to.auto);
-			if(this.p.random) this.p.random.cancel();
-			if(this.state.auto) this.slide('r');
-		}
+		console.log(this.state.auto);
 		if(prevState.index!==this.state.index||prevState.rindex!==this.state.rindex||prevState.random!==this.state.random){
-			this.ani('back')
+			this.ani('back');
+			if(prevState.random===this.state.random) return;
 		}
+		tools.cancel(this.p,'p');
+		tools.cancel(this.to,'to');
+		if(!this.pause) this.slide('r',this.state.random);
 	}
 	shouldComponentUpdate(nextProps,nextState){
 		var update = (nextState.slideshow!==this.state.slideshow||(this.state.slideshow && (
