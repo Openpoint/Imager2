@@ -214,16 +214,23 @@ window.imager_tools = function(){
 						var a='';
 						var b = '';
 						alt.each(function(i){
-							if(this.nodeType === 3){
-								a = a+i$(this).text();
+							var snippet = i$(this).text().trim();
+							if(this.nodeType === 3 && snippet){
+								a = a+snippet;
 								if(i < alt.length-1) a=a+' '
 							};
-							b = b+i$(this).text().trim();
-							if(b && i < alt.length-1) b=b+' | ';
+							if(snippet){
+								b = b+snippet;
+								if(i < alt.length-1) b=b+' | ';
+							}
+
 						});
 
 						a = a.trim();
-						b = b.trim().replace('||','|');
+						b = b.trim();
+						if(b.slice(-1)==='|') b = b.slice(0, -1).trim();
+						//b = b.trim().replace(/\|\|/g,'|');
+						//b = b.replace(/\|\ \|/g,'|')
 						this.alt = a?a:b;
 						if(!onpage){
 							this.url = container.attr('href');
