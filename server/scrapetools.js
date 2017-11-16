@@ -28,7 +28,7 @@ window.imager_tools = function(){
 		}else{
 			count++
 		}
-		console.log(count,dir,oh,h)
+		//console.log(count,dir,oh,h)
 		if((h >= oh || count > 30) && !init){
 			resolve(true);
 			return;
@@ -36,7 +36,6 @@ window.imager_tools = function(){
 		dir==='y'?i$(window).scrollTop(i$(window).scrollTop()+900):i$(window).scrollLeft(i$(window).scrollLeft()+900);
 
 		setTimeout(function(){
-			//console.log('awake:'+i$('.awake').length+' view:'+i$('.view').length)
 			self.scroll(wh,dir,h,resolve,count)
 		},to)
 		if(init) return p;
@@ -45,29 +44,10 @@ window.imager_tools = function(){
 		this.site = site;
 		i$ = window.jQuery;
 		var self = this;
-		console.log("scraping")
 		this.title = i$('title').html();
 		this.description = i$('meta[name=description]').attr("content");
 		go();
-		/*
-		i$(window).on('load',function(){
-			if(!self.launched) go();
-		})
-
-		if(document.readyState === 'complete'){
-			if(!self.launched) go();
-		}else{
-			i$(window).on('load',function(){
-				if(!self.launched) go();
-			})
-			self.gto = setTimeout(function(){
-				if(!self.launched) go()
-			},3000)
-		}
-		*/
-
 		function go(){
-			console.log('gooooooooooooooooooo!')
 			clearTimeout(self.gto);
 			self.launched = true;
 			var wh = i$(window).height();
@@ -95,14 +75,15 @@ window.imager_tools = function(){
 		var ext = href.split('?')[0];
 		ext = ext.split('.');
 		ext=ext.pop();
-		if(ext && ['jpg','jpeg','png','gif'].indexOf(ext.toLowerCase()) > -1){
+		if(ext && ['jpg','jpeg','png','gif','bmp'].indexOf(ext.toLowerCase()) > -1){
 			return href;
 		}else{
 			return false;
 		}
 	},
 	this.fix = function(href){
-		if(href.indexOf('data:image')===0) return href;
+		if(href.indexOf('data:image/svg') === 0) return false;
+		if(href.indexOf('data:image') === 0) return href;
 		if(href.indexOf('http')!==0){
 			if(href.indexOf('//')===0){
 				href = href.replace('//','');
@@ -111,14 +92,18 @@ window.imager_tools = function(){
 				href = window.location.href+href
 			}
 		}
-		if(this.isImage(href)) href = href.split('?')[0];
-		return href;
+		href = href.split('?')[0];
+		if(this.isImage(href)) return href;
+		return false;
+
 	},
 	this.mod = function(src){
 		if(!src) return false;
 		if(src.indexOf('url(')===0){
 			src = src.slice(0, -1).replace('url(','').trim();
 		}
+		src = self.fix(src);
+		if(!src) return false;
 		if(this.site==='flickr'){
 			if(src.indexOf('/sprites/') > -1) return false;
 			src = src.split('?');
@@ -138,8 +123,16 @@ window.imager_tools = function(){
 				src = decodeURIComponent(src);
 			}
 		}
-		if(this.site==='magnumphotos' && src.indexOf('//content.magnumphotos')!==-1){
-			src = src.replace('//content.magnumphotos','//www.magnumphotos')
+		if(this.site==='magnumphotos'){
+			if(src.indexOf('//content.magnumphotos')!==-1) src = src.replace('//content.magnumphotos','//www.magnumphotos');
+			var file = src.split('/');
+			file = file[file.length-1].split('.')[0];
+			file = file.split('-');
+			if(file.length > 1){
+				file.shift();
+				file = '-'+file.join('-');
+				src = src.replace(file,'');
+			}
 		}
 		if(this.site==='beetlesandhuxley'){
 			src = src.replace('imagecache/stock-image-medium/','')
@@ -152,10 +145,10 @@ window.imager_tools = function(){
 			src = file.join('/');
 			src = src.replace('thumb/','');
 		}
-		src = self.fix(src);
+
 		return src;
 	},
-	this.search = function(i,foo){
+	this.search = function(i){
 		if(i.css('background-image').indexOf('url(') === 0){
 			var src = i.css('background-image');
 			src = this.mod(src);
@@ -169,13 +162,17 @@ window.imager_tools = function(){
 		}
 		if(i.attr('href')){
 			src = this.mod(i.attr('href'));
-			src = self.isImage(src);
+			//src = self.isImage(src);
+			if(src) this.foo.push({src:src});
+		}
 
+		if(i.attr('data-src')){
+			src = this.mod(i.attr('data-src'));
 			if(src) this.foo.push({src:src});
 		}
 	},
 	this.ready = function(){
-
+		console.log('Scraping')
 		try{
 			this.foo = [];
 			var self = this;
@@ -185,7 +182,6 @@ window.imager_tools = function(){
 					try {
 						data = JSON.parse(data);
 						if(data.ou){
-							console.log(data.oh,data.ow)
 							self.foo.push({
 								src:data.ou,
 								alt:data.pt||'',
@@ -203,7 +199,38 @@ window.imager_tools = function(){
 			}
 			if(!this.foo.length){
 				i$('img,object').each(function(){
-					this.src = self.mod(this.src);
+					var src = self.mod(this.src);
+					if(!src) src = self.mod(this.getAttribute('data-src'));
+					if(self.site==='magnumphotos'){
+						var container = i$(this).closest('a');
+						var onpage;
+
+						if(container.hasClass('js-overlay-open')||container.hasClass('image-player-link')||!container.attr('class')||container.attr('class')==='image'){
+							if(container.attr('class') && container.attr('class')!=='image') onpage = true;
+							container = container.parent();
+						}
+
+						var alt = i$('.b-caption__text,.data,h4 a',container).contents();
+						var a='';
+						var b = '';
+						alt.each(function(i){
+							if(this.nodeType === 3){
+								a = a+i$(this).text();
+								if(i < alt.length-1) a=a+' '
+							};
+							b = b+i$(this).text().trim();
+							if(b && i < alt.length-1) b=b+' | ';
+						});
+
+						a = a.trim();
+						b = b.trim().replace('||','|');
+						this.alt = a?a:b;
+						if(!onpage){
+							this.url = container.attr('href');
+							this.urltitle = b;
+						}
+
+					}
 					if(self.site==='wikipedia'){
 						var url = i$(this).parent().attr('href');
 						if(url && url.indexOf('/wiki/')===0){
@@ -221,7 +248,7 @@ window.imager_tools = function(){
 							if(!this.alt && alt) this.alt = alt;
 						}
 					}
-					if(this.src) self.foo.push({src:this.src,alt:this.alt,url:this.url,urltitle:this.urltitle});
+					if(src) self.foo.push({src:src,alt:this.alt,url:this.url,urltitle:this.urltitle});
 				});
 
 				i$('div,a,span,body,li,main,td,table,tr,th').each(function(){

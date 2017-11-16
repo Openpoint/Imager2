@@ -57,6 +57,7 @@ export class LoadImages extends Component {
 		}
 	}
 	cancel(){
+		console.error('CANCEL');
 		this.stop = true;
 		this.done();
 	}

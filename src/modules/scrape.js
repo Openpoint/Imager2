@@ -1,6 +1,6 @@
-import 'whatwg-fetch';
 import tools from './tools.js';
 import Promise from "bluebird";
+import 'whatwg-fetch';
 
 Promise.config({cancellation:true});
 
@@ -23,7 +23,8 @@ scraper.prototype.getpage = function(query){
 }
 scraper.prototype.scrape = function(query,id){
 	var self = this;
-	return new Promise(function(resolve,reject){
+	var p = new Promise(function(resolve,reject){
+
 		if(!query){
 			reject('not a valid url');
 			return;
@@ -47,6 +48,7 @@ scraper.prototype.scrape = function(query,id){
 			resolve(json)
 		})
 	})
+	return p;
 }
 
 export default scraper;

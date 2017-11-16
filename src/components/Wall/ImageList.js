@@ -42,7 +42,6 @@ export class ImageList extends Component {
 	}
 	//check for when masonary has finished the layout and knows all the elements sizes and positions,all images are ready to be loaded
 	blocks(){
-		console.log("start blocks");
 		var  l = Object.keys(this.xMasonry.state.blocks).length;
 		this.l2 = Object.keys(this.ims).length;
 		if(!this.l2||!l||this.l2!==l){
@@ -58,7 +57,6 @@ export class ImageList extends Component {
 				var top = document.querySelector("[data-key='"+focus+"']").offsetTop+this.top;
 				window.scrollTo(0,top);
 			}
-			console.log('blocks done');
 			this.lazygo();
 		}
 	}
@@ -202,12 +200,6 @@ export class ImageList extends Component {
 		window.removeEventListener('scroll',this.imload);
 		tools.cancel(this.p,'p');
 		tools.cancel(this.timeouts,'to');
-		var self = this;
-		Object.keys(this.ims).forEach(function(key){
-			self.ims[key].I = null;
-			self.ims[key].CTX = null;
-			self.ims[key].canvas = null;
-		})
 		this.ims = null;
 		this.xMasonry = null;
 		this.q = null;

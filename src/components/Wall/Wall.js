@@ -38,6 +38,7 @@ export class Wall extends Component {
 	}
 	cancel(){ //cancel a scrape action
 		if(this.p.scrape) this.p.scrape.cancel();
+		clearInterval(this.imessage);
 		if(this.G('loadimages')){
 			this.G('cancel')();
 		}else if(this.state.isloading){
