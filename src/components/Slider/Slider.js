@@ -68,6 +68,7 @@ export class Slider extends Component {
 		}
 		this.images = this.G('page').images;
 		if(index === 'front'){
+			this.images = tools.imageSort(this.G('page'),'front');
 			this.setState({
 				slideshow:true,
 				index:this.G('lastfront')||0,
@@ -77,7 +78,7 @@ export class Slider extends Component {
 				tools.fullscreen('slideshow')
 			})
 		}else{
-			this.images = tools.imageSort(this.images,'page');
+			this.images = tools.imageSort(this.G('page'),'page');
 			this.setState({
 				slideshow:true,
 				index:index
@@ -189,7 +190,6 @@ export class Slider extends Component {
 		}
 	}
 	componentDidUpdate(prevProps, prevState){
-		console.log(this.state.auto);
 		if(prevState.index!==this.state.index||prevState.rindex!==this.state.rindex||prevState.random!==this.state.random){
 			this.ani('back');
 			if(prevState.random===this.state.random) return;
@@ -328,7 +328,7 @@ export class Slider extends Component {
 				)}
 
 				<div id='alt' className='alt' data-hidden = {this.G("hidealt")}>
-					{image.alt && <div>{tools.decode(image.alt)}</div>}
+					{image.alt && <div dangerouslySetInnerHTML={{__html:image.alt}} />}
 					<div className = 'ttParent control altshow'>
 						<FontAwesome name='ban' onClick = {()=>{
 							var hidealt = this.G("hidealt")

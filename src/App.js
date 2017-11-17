@@ -83,7 +83,8 @@ class App extends Component {
 	}
 	close(){
 		window.removeEventListener('beforeunload',this.close);
-		this.Glob.exit();
+		if(this.Glob.exit) this.Glob.exit();
+
 		this.setState({exit:true},()=>{
 			this.Glob = null;
 			console.error('exited')

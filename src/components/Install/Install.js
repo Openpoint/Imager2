@@ -7,24 +7,59 @@ export class Install extends Component {
 		super(props);
 		this.handleChange = this.handleChange.bind(this);
 		this.handleSubmit = this.handleSubmit.bind(this);
+		this.validate = this.validate.bind(this);
+		this.vinit = this.vinit.bind(this);
 		this.state = {
-			install:this.props.install
+			install:this.props.install,
+			confirmpass:"Confirm your password"
+		}
+	}
+	vinit(){
+		this.formfields = [];
+		Object.keys(this.form).forEach((key)=>{
+			if(this.form[key].required) this.formfields.push(this.form[key].name);
+		});
+		this.validate(this.form.name);
+	}
+	validate(form){
+		if(!this.formfields.some((key)=>{
+			if(form === 'user' && (this.state.user.password !== this.state.user.pass2)){
+				if(this.state.user.password && this.state.confirmpass){
+					this.setState({confirmpass:false})
+				}else if(!this.state.user.password && !this.state.confirmpass){
+					this.setState({confirmpass:"Confirm your password"})
+				}
+				return true;
+			}else if(form === 'user' && this.state.user.password && this.state.user.password === this.state.user.pass2){
+				this.setState({confirmpass:"Passwords Match"})
+			}else{
+				this.setState({confirmpass:"Confirm your password"})
+			}
+			var input = document.querySelector('.input[name="'+key+'"]');
+			return !input.validity.valid
+		})){
+			this.submit.disabled = false;
+		}else{
+			this.submit.disabled = true;
 		}
 	}
 	handleChange(event,form){
 		var i = this.state[form];
+
+		if(event.target.name === 'pass2'){
+			event.target.valid = (event.target.value === i.password)
+		}
 		i[event.target.name] = event.target.value
 		this.setState({
 			[form]:i
-		})
+		},()=>this.validate(form))
 	}
 	handleSubmit(event){
-		//console.warn(event.target.name);
+		console.warn(event.target.name);
 		event.preventDefault();
 		var self = this;
 		if(event.target.name === 'install'){
 			crud.install(this.state.install).then(function(data){
-				console.log(data);
 				if(data.error){
 					self.setState({
 						error:data.reason==='missing'?'Database "'+self.state.install.dbname+'" exists, but is not a valid Imager database':data.reason
@@ -47,7 +82,7 @@ export class Install extends Component {
 				}
 			})
 		};
-		if(event.target.name === 'adminuser'){
+		if(event.target.name === 'user'){
 			crud.install(this.state.user).then(function(data){
 				if(data.error){
 					self.setState({
@@ -71,12 +106,21 @@ export class Install extends Component {
 			})
 		};
 	}
+	componentDidUpdate(prevProps, prevState){
+		if(prevState.form !== this.state.form) this.vinit();
+	}
+	componentDidMount(){
+		this.vinit();
+	}
 	render(){
 		if(this.state.install) return(
 			<div id='wrapper'>
 				{this.state.error && <p className = 'error'>{this.state.error}</p>}
 				<p>Imager requires CouchDB v2 or greater.</p>
-				<form onSubmit={this.handleSubmit} name='install'>
+				<form onSubmit={this.handleSubmit} name='install' ref = {(form)=>{
+					if(!form) return;
+					this.form = form;
+				}}>
 					<label>Database Name</label>
 					<input className='input' type='text' value={this.state.install.dbname} name='dbname' onChange = {(event)=>this.handleChange(event,'install')} required />
 					<label>CouchDB Admin Name</label>
@@ -89,7 +133,7 @@ export class Install extends Component {
 					<input className='input' type='text' value={this.state.install.host} name='host' onChange = {(event)=>this.handleChange(event,'install')} required />
 					<label>Database Port</label>
 					<input className='input' type='text' value={this.state.install.couchport} name='couchport' onChange = {(event)=>this.handleChange(event,'install')} required />
-					<input className='submit' type="submit" value="Install" />
+					<input className='submit' type="submit" value="Install" ref = {(submit)=>this.submit = submit}/>
 				</form>
 			</div>
 		)
@@ -97,16 +141,19 @@ export class Install extends Component {
 			<div id='wrapper'>
 				{this.state.error && <p className = 'error'>{this.state.error}</p>}
 				<p>Set up your Imager user</p>
-				<form onSubmit={this.handleSubmit} name='adminuser'>
+				<form onSubmit={this.handleSubmit} name='user' ref = {(form)=>{
+					if(!form) return;
+					this.form = form;
+				}}>
 					<label>User Name</label>
 					<input className='input' type='text' value={this.state.user.username} name='username' onChange = {(event)=>this.handleChange(event,'user')} required />
 					<label>User Password</label>
-					<input className='input' type='password' value={this.state.user.password} name='password' onChange = {(event)=>this.handleChange(event,'user')} required />
-					<label>Confirm Password</label>
-					<input className='input' type='password' value={this.state.user.pass2} name='pass2' onChange = {(event)=>this.handleChange(event,'user')} required />
+					<input className='input' type='password' value={this.state.user.password} name='password' onChange = {(event)=>this.handleChange(event,'user')} required autocomplete="new-password"/>
+					<label>{this.state.confirmpass?this.state.confirmpass:"Passwords do not match"}</label>
+					<input className='input' type='password' value={this.state.user.pass2} name='pass2' onChange = {(event)=>this.handleChange(event,'user')} required  autocomplete="new-password"/>
 					<label>Email</label>
 					<input className='input' type='email' value={this.state.user.email} name='email' onChange = {(event)=>this.handleChange(event,'user')} required />
-					<input className='submit' type="submit" value="Create" />
+					<input className='submit' type="submit" value="Create"  ref = {(submit)=>this.submit = submit} />
 				</form>
 			</div>
 		)

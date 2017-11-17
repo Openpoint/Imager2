@@ -143,7 +143,7 @@ export class Image extends Component {
 						)}
 					</div>
 					{this.props.image.info && <div className = 'ttParent info opt'>
-						<Tooltip message = {tools.decode(this.props.image.info).substring(0,200)+'...'} position = 'bottom' />
+						<Tooltip message = {this.props.image.info.substring(0,200)+'...'} position = 'bottom' />
 					</div>}
 					{this.state.load && this.state.loaded !== 'loading' && this.props.image.favicon && <div className='favicon ttParent opt' >
 						<a href={'http://'+tools.sitename(this.props.image.parenturl)} target = '_blank' onClick = {(event)=>event.stopPropagation()} >
@@ -211,7 +211,7 @@ export class Image extends Component {
 					</div>
 
 					{this.props.image.alt && <div className = 'ttParent info opt' >
-						<Tooltip message = {tools.decode(this.props.image.alt)} position = 'bottom' />
+						<Tooltip message = {this.props.image.alt} position = 'bottom' />
 					</div>}
 
 					{this.state.load && this.state.loaded !== 'loading' && <div className  = 'controls opt'>

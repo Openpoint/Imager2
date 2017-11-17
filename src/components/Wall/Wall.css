@@ -45,7 +45,11 @@
 	position:relative;
 	flex:1;
 }
-
+#wall.welcome{
+	padding-top:40px;
+	color:var(--color1);
+	text-align:center;
+}
 .isloading #wall{
 	color:var(--color1);
 	display:flex;

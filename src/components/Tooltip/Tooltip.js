@@ -8,7 +8,7 @@ export class Tooltip extends Component {
 		return(
 			<div className = {['tooltip ',this.props.position].join('')}>
 				<div className='arrow'></div>
-				<div className = 'text' style = {{width:width}}> {this.props.message}</div>
+				<div className = 'text' style = {{width:width}} dangerouslySetInnerHTML={{__html:this.props.message}} />
 			</div>
 		)
 	}

@@ -320,7 +320,7 @@ export class ImageList extends Component {
 		var w = (Math.floor(style.width.replace('px','')*1/40));
 		var self = this;
 		console.error('render imagewall')
-		this.images = tools.imageSort(this.G('page').images,this.G('state').Context);
+		this.images = tools.imageSort(this.G('page'),this.G('state').Context);
 		var images = this.images.map(function(image,index){
 			var w = tools.getClass(image);
 			return <XBlock key={image.index} width={w}>

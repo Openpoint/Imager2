@@ -12,6 +12,10 @@ class Controls extends Component {
 		this.slideshow = this.slideshow.bind(this);
 	}
 	slideshow(){
+		if(!this.G('pages') || !this.G('pages').length){
+			alert('Start by adding some pages first');
+			return;
+		}
 		this.G('slideshow')('front');
 	}
 	render(){
@@ -86,6 +90,10 @@ export class Footer extends Component {
 
 	}
 	nav(dir){
+		if(!this.G('pages') || !this.G('pages').length){
+			alert('Start by adding some pages first')
+			return;
+		}
 		var list = this.pages;
 		var index = tools.getindex(this.G('location'));
 		if(index) this.prev = index;

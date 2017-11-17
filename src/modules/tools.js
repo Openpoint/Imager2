@@ -17,11 +17,17 @@ tools.prototype.sort = function(array,field,dir){
 		return 0;
 	})
 }
-tools.prototype.imageSort = function(images,context){
-	if(!images) return [];
+tools.prototype.imageSort = function(page,context){
+	var images = page.images;
+	if(!images || !images.length) return [];
 	var index = {};
 	//remove duplicate images
+
 	images = images.map(function(img,i){
+		if(!img.alt){
+			img.alt = (img.info||page.title||page.description);
+			if(img.alt) img.alt = img.alt.substring(0,175);
+		}
 		if(!index[img.index]){
 			index[img.index]=true;
 			return img;

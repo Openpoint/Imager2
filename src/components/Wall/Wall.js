@@ -178,15 +178,14 @@ export class Wall extends Component {
 			this.G('allims',allims);
 		}
 		if(this.G('page') && this.G('page').images) page.images = page.images.concat(this.G('page').images)
-		//page.images = tools.imageSort(page.images,'page');
 		this.wall(page);
 	}
 	noims(page){
 		if(!page) page = this.G('page');
 		this.G('page',false);
 		this.setState({
-			description:tools.decode(page.description),
-			title:tools.decode(page.title),
+			description:page.description,
+			title:page.title,
 			link:page.link,
 			refresh:false,
 			scrapemessage:"No images were found for the page",
@@ -195,15 +194,15 @@ export class Wall extends Component {
 		this.G('isloading')(true,'page');
 	}
 	wall(page){
-
+		//page.title = tools.decode(page.title);
 		if(!page.images || !page.images.length){
 			this.noims(page);
 			return;
 		}
 		this.G('page',page);
 		this.setState({
-			description:tools.decode(page.description),
-			title:tools.decode(page.title),
+			description:page.description,
+			title:page.title,
 			link:page.link,
 			refresh:false,
 			scrapemessage:false,
@@ -213,11 +212,6 @@ export class Wall extends Component {
 	}
 
 	home(images){
-		/*
-		this.G('page',{
-			images:tools.imageSort(images,'front')||[],
-		});
-		*/
 		this.G('page',{
 			images:images
 		});
@@ -277,7 +271,14 @@ export class Wall extends Component {
 	}
 
 	render(){
-		//console.warn('Render the Wall: '+this.state.isloading);
+		if(this.G('state').Context === 'front' && this.G('page') && !this.G('page').images.length){
+			return(
+				<div id='wall' className='welcome'>
+					<h1>Welcome to Imager</h1>
+					<div>Start by adding a search or URL above</div>
+				</div>
+			)
+		}
 		if(this.state.isloading) return(
 			<div id='wall'>
 				{this.state.nogood && <div id='head'>
@@ -307,6 +308,7 @@ export class Wall extends Component {
 			</div>
 		)
 
+
 		if(this.G('state').Context === 'page'){
 			return(
 				<div id='wall'>
@@ -325,8 +327,8 @@ export class Wall extends Component {
 							</div>
 							)}
 						</div>
-						<h2><a href={this.state.link} target='_blank'>{this.state.title||'Untitled'}</a></h2>
-						<p>{this.state.description}</p>
+						<h2><a href={this.state.link} target='_blank' dangerouslySetInnerHTML={{__html:this.state.title||'Untitled'}} /></h2>
+						<p dangerouslySetInnerHTML={{__html:this.state.description}}></p>
 					</div>
 					<div className='page widgets'>
 						{this.G('page') && this.G('page').images.length && <ImageList Global = {this.G} />}
