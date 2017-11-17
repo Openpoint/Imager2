@@ -24,7 +24,7 @@ tools.prototype.imageSort = function(page,context){
 	//remove duplicate images
 
 	images = images.map(function(img,i){
-		if(!img.alt){
+		if(!img.alt||img.src.indexOf(img.alt)!==-1){
 			img.alt = (img.info||page.title||page.description);
 			if(img.alt) img.alt = img.alt.substring(0,175);
 		}
