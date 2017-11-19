@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import {ImageList} from './ImageList.js';
 import FontAwesome from 'react-fontawesome';
 import {Tooltip} from '../Tooltip/Tooltip.js';
-
+import Cookies from 'js-cookie';
 import SCRAPE from '../../modules/scrape.js';
 import {LoadImages} from './LoadImages.js';
 import crud from '../../modules/crud.js';
@@ -27,14 +27,48 @@ export class Wall extends Component {
 		this.clear = this.clear.bind(this);
 		this.remove = this.remove.bind(this);
 		this.cancel = this.cancel.bind(this);
+		this.bookmark = this.bookmark.bind(this);
+		this.G("bookmark",this.bookmark);
 		this.state = {
 			slideshow:false,
 			id:this.props.id,
 			page:{images:[]},
 			loggedin:this.G('state').loggedin,
-			isloading:this.G('state').isloading
+			isloading:this.G('state').isloading,
+			bookmarked:this.bookmark()
 		};
 		this.p={};
+
+	}
+	bookmark(id){
+		var bm = Cookies.get('bookmarks');
+		this.bookmarks = bm?JSON.parse(bm):[];
+		if(id){
+			var remove;
+			this.bookmarks = this.bookmarks.filter(function(b){
+				if(b.id === id){
+					remove = true;
+					return false;
+				}
+				return true;
+			})
+			if(!remove){
+				this.bookmarks.push({id:id,title:this.state.title});
+				this.setState({bookmarked:true})
+			}else{
+				this.setState({bookmarked:false})
+			}
+		}else{
+			if(!this.bookmarks.length) return false;
+			this.G('bookmarks',this.bookmarks);
+			if(this.G('refreshcontrols')) this.G('refreshcontrols')();
+			return this.bookmarks.some((b)=>{
+				return b.id === this.props.id
+			})
+		}
+		Cookies.set('bookmarks',JSON.stringify(this.bookmarks));
+		this.G('bookmarks',this.bookmarks);
+		this.G('refreshcontrols')();
 	}
 	cancel(){ //cancel a scrape action
 		if(this.p.scrape) this.p.scrape.cancel();
@@ -249,7 +283,8 @@ export class Wall extends Component {
 		this.setState({
 			loggedin:this.G('state').loggedin,
 			isloading:this.G('state').isloading,
-			id:nextProps.id
+			id:nextProps.id,
+			bookmarked:this.bookmark()
 		})
 		if(nextProps.id!==this.props.id || this.G('newpage') || nextProps.reload){
 			this.clear();
@@ -266,7 +301,8 @@ export class Wall extends Component {
 			nextProps.reload ||
 			this.state.isloading !== nextState.isloading ||
 			this.state.scrapemessage !== nextState.scrapemessage ||
-			this.state.loggedin !== nextState.loggedin
+			this.state.loggedin !== nextState.loggedin ||
+			this.state.bookmarked !== nextState.bookmarked
 		)
 	}
 
@@ -326,6 +362,10 @@ export class Wall extends Component {
 								<Tooltip message = 'Delete Page' position='top' />
 							</div>
 							)}
+							<div className = 'control ttParent'>
+								<FontAwesome size='lg' name={this.state.bookmarked?'bookmark':'bookmark-o'} onClick = {()=>this.bookmark(this.state.id)} />
+								<Tooltip message = {this.state.bookmarked?'Remove page from bookmarks':'Add page to bookmarks'} position='top' />
+							</div>
 						</div>
 						<h2><a href={this.state.link} target='_blank' dangerouslySetInnerHTML={{__html:this.state.title||'Untitled'}} /></h2>
 						<p dangerouslySetInnerHTML={{__html:this.state.description}}></p>

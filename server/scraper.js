@@ -2,7 +2,8 @@
 
 const phantom = require('phantom');
 const jq = require.resolve('jquery');
-const bb = require.resolve('bluebird').replace('release/bluebird.js','browser/bluebird.min.js');
+//const bb = require.resolve('bluebird').replace('release/bluebird.js','browser/bluebird.min.js');
+const path = require('path');
 const tools = require.resolve('./scrapetools.js');
 const fs = require('fs');
 const {URL} = require('url');
@@ -74,26 +75,33 @@ function scrape(url,browser){
 				}else{
 					reject('error in scrape')
 				}
-
-				page.close().then(function(){
-					console.log('page closed')
-					browser.exit().then(function(){
-						console.log('browser exit')
-					});
-				})
-				/*
 				page.property('content').then(function(html){
-					fs.writeFileSync('test.html', html);
-					browser.exit();
+					fs.writeFileSync('./test.html', html);
+					page.close().then(function(){
+						console.log('page closed');
+						browser.exit().then(function(){
+							console.log('browser exit')
+						});
+					})
 				},function(err){
 					console.log(err);
 				});
-				*/
+
+
+
+
+
 			},function(err){
 				console.error('Error: '+err);
 			});
+
 			page.on('onInitialized',function(){
-				page.injectJs(bb);
+				page.injectJs(path.join(__dirname,'promise.js'));
+				page.evaluate(function(){
+					Number.isNaN = Number.isNaN || function(value) {
+						return value !== value;
+					}
+				})
 				page.injectJs(tools);
 			});
 

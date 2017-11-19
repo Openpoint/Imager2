@@ -25,6 +25,7 @@ window.imager_tools = function(){
 			var p = new Promise(function(res,reject){
 				resolve = res;
 			});
+
 		}else{
 			count++
 		}
@@ -47,6 +48,7 @@ window.imager_tools = function(){
 		this.title = i$('title').html();
 		this.description = i$('meta[name=description]').attr("content");
 		go();
+
 		function go(){
 			clearTimeout(self.gto);
 			self.launched = true;
@@ -92,7 +94,7 @@ window.imager_tools = function(){
 				href = window.location.href+href
 			}
 		}
-		href = href.split('?')[0];
+		//href = href.split('?')[0];
 		if(this.isImage(href)) return href;
 		return false;
 

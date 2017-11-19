@@ -9,7 +9,13 @@ import './Footer.css';
 class Controls extends Component {
 	constructor(props){
 		super(props);
+		this.G = this.props.Global;
 		this.slideshow = this.slideshow.bind(this);
+		this.refreshcontrols = this.refreshcontrols.bind(this);
+		this.G('refreshcontrols',this.refreshcontrols);
+	}
+	refreshcontrols(){
+		this.forceUpdate()
 	}
 	slideshow(){
 		if(!this.G('pages') || !this.G('pages').length){
@@ -19,16 +25,21 @@ class Controls extends Component {
 		this.G('slideshow')('front');
 	}
 	render(){
-		this.G = this.props.Global;
-
+		var bookmarks =[];
+		if(this.G('bookmarks') && this.G('bookmarks').length){
+			bookmarks = this.G('bookmarks').map((b,i)=>{
+				return (
+					<div key = {b.id} className = 'ttParent' style={{position:'relative'}}>
+						<div className = 'icon' onClick={()=>this.G('history').push('/page/'+b.id)}>{i+1}</div>
+						<Tooltip message = {b.title} position='top right' width='300'/>
+					</div>
+				)
+			})
+		}
 		return(
 			<div className='controls'>
 				<div className='extra left' style={{fontSize:".85em"}}>
-					{/*
-						<div className='icon'>1</div>
-						<div className='icon'>2</div>
-						<div className='icon'>3</div>
-					*/}
+					{bookmarks}
 				</div>
 				<div className = 'tower'>
 					<div className='top'>
