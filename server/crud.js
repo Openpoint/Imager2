@@ -14,6 +14,7 @@ function makeCouch(){
 	protocol = i.protocol+'://';
 	host = i.host+':'+i.couchport+'/';
 	couch = protocol+u.username+':'+u.password+'@'+host+i.dbname+'/';
+	console.log(couch);
 	//var host = i.protocol+'://'+u.username+':'+u.password+'@'+i.host+':'+i.couchport+'/';
 	//couch = host+i.dbname+'/';
 }
