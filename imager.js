@@ -10,8 +10,6 @@ const prompt = require('prompt');
 const fs = require('fs');
 const crypto = require('crypto');
 
-if(process.argv[2]!=='build') return child.fork('scripts/build.js',{env:{API_PORT:port}});
-
 var supersecret = crypto.randomBytes(20).toString('hex');
 console.log(supersecret);
 
@@ -72,7 +70,7 @@ var Port = function(port){
 }
 
 Port(3000).then(function(port){
-
+	if(process.argv[2]==='build') return child.fork('scripts/build.js',{env:{API_PORT:port}});
 	process.env['SERVER_PORT'] = port;
 	app.listen(port,function() {
 		console.log('Imager API listening on port '+port+'!')
