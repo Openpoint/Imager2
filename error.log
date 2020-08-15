@@ -26,3 +26,13 @@
 [Wed Oct 18 10:57:02.699301 2017] [core:error] [pid 3999] [client 127.0.0.1:60990] AH00124: Request exceeded the limit of 10 internal redirects due to probable configuration error. Use 'LimitInternalRecursion' to increase the limit if necessary. Use 'LogLevel debug' to get a backtrace.
 [Thu Oct 19 10:05:10.887127 2017] [core:error] [pid 4269] [client 127.0.0.1:34416] AH00124: Request exceeded the limit of 10 internal redirects due to probable configuration error. Use 'LimitInternalRecursion' to increase the limit if necessary. Use 'LogLevel debug' to get a backtrace.
 [Thu Oct 19 10:05:10.911351 2017] [core:error] [pid 4272] [client 127.0.0.1:34417] AH00124: Request exceeded the limit of 10 internal redirects due to probable configuration error. Use 'LimitInternalRecursion' to increase the limit if necessary. Use 'LogLevel debug' to get a backtrace.
+[Mon Oct 01 01:31:41.153627 2018] [:error] [pid 7542] [client 202.28.24.84:54421] script '/var/www/html/imager/scripts/setup.php' not found or unable to stat
+[Mon Oct 01 04:09:06.115380 2018] [:error] [pid 8639] [client 211.178.175.55:16079] script '/var/www/html/imager/scripts/setup.php' not found or unable to stat
+[Mon Oct 01 10:35:56.225097 2018] [:error] [pid 8636] [client 78.46.148.73:45352] script '/var/www/html/imager/scripts/setup.php' not found or unable to stat
+[Mon Oct 01 11:43:38.143156 2018] [:error] [pid 8638] [client 182.254.185.82:36710] script '/var/www/html/imager/scripts/setup.php' not found or unable to stat
+[Wed Oct 03 10:21:10.544206 2018] [:error] [pid 9736] [client 101.132.243.11:47790] script '/var/www/html/imager/scripts/setup.php' not found or unable to stat
+[Sat Oct 06 00:35:57.105474 2018] [:error] [pid 4699] [client 117.50.15.118:43082] script '/var/www/html/imager/scripts/setup.php' not found or unable to stat
+[Tue Oct 09 01:48:35.619077 2018] [:error] [pid 29349] [client 47.96.113.7:59685] script '/var/www/html/imager/scripts/setup.php' not found or unable to stat
+[Wed Oct 17 10:35:06.748431 2018] [:error] [pid 28331] [client 218.60.56.174:54490] script '/var/www/html/imager/scripts/setup.php' not found or unable to stat
+[Tue May 28 10:59:12.203315 2019] [:error] [pid 5555] [client 127.0.0.1:34312] script '/var/www/html/imager/wp-login.php' not found or unable to stat, referer: http://www.google.com.hk
+[Sat Jun 22 08:27:03.572258 2019] [:error] [pid 1079] [client 127.0.0.1:40668] script '/var/www/html/imager/index.php' not found or unable to stat
