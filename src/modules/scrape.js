@@ -8,7 +8,7 @@ Promise.config({cancellation:true});
 function scraper(port,env){
 	if(!port||env==='production') port = window.location.port;
 	port?port=':'+port+'/':port = '/'
-	this.url = window.location.protocol+'//'+window.location.hostname+port+'api/scrape?url=';
+	this.url = window.location.protocol+'//'+window.location.hostname+port+'scrape?url=';
 }
 scraper.prototype.getpage = function(query){
 	if(query.indexOf('http')!==0) query = 'https://'+query;
@@ -30,10 +30,13 @@ scraper.prototype.scrape = function(query,id){
 			return;
 		}
 		var req = self.url+encodeURIComponent(query);
-		console.log(req);
 		fetch(req).then(function(response){
-			return response.json();
+			console.log(response);
+			const data = response.json();
+			console.log(data)
+			return data;
 		}).then(function(json){
+			console.log(json);
 			json.id = id;
 			json.link = query;
 			var images = [];

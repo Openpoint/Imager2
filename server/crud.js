@@ -78,6 +78,7 @@ var crud = function(app){
 
 	})
 	app.post('/api/:action/*',function(req,res,next){
+		console.log('HERE------------------------------', req);
 		var url = couch+req.params.action+'/'+req.params[0];
 		request.get({
 			body:req.body,
