@@ -88,6 +88,7 @@ export class Search extends Component {
 		this.setState({value:''});
 
 		var url = placeholders[this.state.type].parse(this.state.value);
+		console.warn(1,url);
 		if(!url){
 			url = placeholders.link.parse(this.state.value);
 			this.setState({
@@ -96,6 +97,7 @@ export class Search extends Component {
 		}
 		if(!url) return;
 		var newpage = scraper.getpage(url);
+		console.warn(2,newpage);
 		if(!newpage.query){
 			url = placeholders.google.parse(this.state.value);
 			newpage = scraper.getpage(url);
@@ -106,6 +108,7 @@ export class Search extends Component {
 		//console.log(newpage)
 		if(this.G('pages').indexOf(newpage.id.toString()) === -1) this.G("newpage",newpage);
 		this.G("history").push('/page/'+newpage.id);
+		console.warn(3,newpage);
 
 	}
 	componentDidMount(){
