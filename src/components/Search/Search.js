@@ -106,8 +106,8 @@ export class Search extends Component {
 			})
 		}
 		//console.log(newpage)
-		if(this.G('pages').indexOf(newpage.id.toString()) === -1) this.G("newpage",newpage);
-		this.G("history").push('/page/'+newpage.id);
+		//if(this.G('pages').indexOf(newpage.id.toString()) === -1) this.G("newpage",newpage);
+		//this.G("history").push('/page/'+newpage.id);
 		console.warn(3,newpage);
 
 	}
