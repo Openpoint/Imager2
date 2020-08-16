@@ -91,11 +91,13 @@ class App extends Component {
 		});
 	}
 	Global(name,f){
+		
 		if(!name && typeof f ==='undefined') return false;
 		if(typeof f ==='undefined' ){
 			if(name === 'state') this.Glob.state = this.state;
 			return this.Glob[name];
 		}
+		console.log(name, f)
 		this.Glob[name] = f;
 	}
 	auth(state){
