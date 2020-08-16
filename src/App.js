@@ -97,7 +97,6 @@ class App extends Component {
 			if(name === 'state') this.Glob.state = this.state;
 			return this.Glob[name];
 		}
-		console.log(name, f)
 		this.Glob[name] = f;
 	}
 	auth(state){
