@@ -105,9 +105,9 @@ export class Search extends Component {
 				type:'google'
 			})
 		}
-		//console.log(newpage)
+		console.log(3, this.G);
 		//if(this.G('pages').indexOf(newpage.id.toString()) === -1) this.G("newpage",newpage);
-		//this.G("history").push('/page/'+newpage.id);
+		this.G("history").push('/page/'+newpage.id);
 		console.warn(3,newpage);
 
 	}
