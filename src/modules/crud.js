@@ -15,9 +15,9 @@ var crud = function(url,port){
 	this.token = Cookies.get('token');
 }
 crud.prototype.set = function(port,env){
-	//if(!port||env==='production') port = window.location.port;
+	if(!port||env==='production') port = window.location.port;
 	port?port=':'+port+'/':port = '/'
-	this.url = window.location.protocol+'//'+window.location.hostname+'/api/';
+	this.url = window.location.protocol+'//'+window.location.hostname+port+'api/';
 }
 
 crud.prototype.logout = function(){

@@ -355,7 +355,7 @@ export class Wall extends Component {
 								<FontAwesome spin={this.state.refresh} size='lg' name='refresh' onClick = {()=>this.renew(this.state.link,this.state.id)} />
 								<Tooltip message = {this.state.scrapemessage?this.state.scrapemessage+' Click to skip':'Look for more images'} position='top' width = '300'/>
 							</div>}
-							{(this.state.loggedin||this.G('page').temp) && (
+							{(this.state.loggedin||(this.G('page') && this.G('page').temp)) && (
 							<div className = 'control ttParent'>
 								{this.state.loggedin && (!this.G('page').temp || this.G('pageupdate')) && <FontAwesome size='lg' name='trash-o' onClick = {()=>this.G('delete')(this.state.id)} />}
 								{this.G('page').temp && !this.G('pageupdate') && <FontAwesome size='lg' name='trash-o' onClick = {()=>this.remove()} />}
