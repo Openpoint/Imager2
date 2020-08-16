@@ -54,7 +54,7 @@ class App extends Component {
 				self.setState(valid);
 				return;
 			};
-			if(valid === 'expired'){
+			if(valid === 'jwt expired'){
 				valid = false;
 				self.modal('login','Your login expired, please log in again');
 			}

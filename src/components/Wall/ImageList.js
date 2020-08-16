@@ -319,7 +319,6 @@ export class ImageList extends Component {
 		var style = window.getComputedStyle(document.getElementById("wall"), null);
 		var w = (Math.floor(style.width.replace('px','')*1/40));
 		var self = this;
-		console.error('render imagewall')
 		this.images = tools.imageSort(this.G('page'),this.G('state').Context);
 		var images = this.images.map(function(image,index){
 			var w = tools.getClass(image);

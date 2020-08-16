@@ -176,6 +176,7 @@ tools.prototype.fullscreen = function(id){
 }
 //exit fullscreen
 tools.prototype.nofullscreen = function(){
+	if(!this.isfullscreen()) return;
 	if (document.exitFullscreen) {
 		document.exitFullscreen();
 	} else if (document.webkitExitFullscreen) {

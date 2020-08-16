@@ -38,7 +38,7 @@ var crud = function(app){
 		res.send(settings);
 	})
 
-	app.get('/:action/*',function(req,res,next){
+	app.get('/api/:action/*',function(req,res,next){
 		var url = couch+req.params.action+'/'+req.params[0];
 		url = tools.querystring(url,req.query);
 		request.get({
@@ -49,7 +49,7 @@ var crud = function(app){
 		})
 	})
 
-	app.get('/:action',function(req,res,next){
+	app.get('/api/:action',function(req,res,next){
 		switch(req.params.action){
 			case 'scrape':
 				next();
@@ -77,7 +77,7 @@ var crud = function(app){
 		}
 
 	})
-	app.post('/:action/*',function(req,res,next){
+	app.post('/api/:action/*',function(req,res,next){
 		var url = couch+req.params.action+'/'+req.params[0];
 		request.get({
 			body:req.body,
@@ -87,7 +87,7 @@ var crud = function(app){
 			res.send(body)
 		})
 	})
-	app.put('/:id',function(req,res,next){
+	app.put('/api/:id',function(req,res,next){
 		request.get({
 			//first check if the page already exists
 			url:couch+req.params.id,
@@ -118,7 +118,7 @@ var crud = function(app){
 		})
 	})
 
-	app.put('/_design/:doc/_update/:type/:id',function(req,res,next){
+	app.put('/api/_design/:doc/_update/:type/:id',function(req,res,next){
 		var url = couch+'_design/'+req.params.doc+'/_update/'+req.params.type+'/'+req.params.id;
 		if(req.query){
 			var isAuth = auth(req.query.token);
@@ -142,7 +142,7 @@ var crud = function(app){
 			res.send({auth:'no token'})
 		}
 	})
-	app.delete('/:id',function(req,res,next){
+	app.delete('/api/:id',function(req,res,next){
 		if(req.query){
 			var isAuth = auth(req.query.token);
 			if(isAuth!=='true'){
