@@ -65,15 +65,33 @@ export class LoadImages extends Component {
 		this.rendered = null;
 		this.newpage.temp=true;
 		var images = [];
-		var self = this;
-		Object.keys(this.ims).forEach(function(key){
-			if(self.ims[key].good){
-				Object.keys(self.ims[key].good).forEach(function(key2){
-					self.ims[key].data[key2]=self.ims[key].good[key2];
+		Object.keys(this.ims).forEach(key => {
+			if(this.ims[key].good){
+				Object.keys(this.ims[key].good).forEach(key2 => {
+					this.ims[key].data[key2]=this.ims[key].good[key2];
 				})
-				images.push(self.ims[key].data);
+				images.push(this.ims[key].data);
 			}
 		})
+		const urls = {};
+		images.forEach(image => {
+			let url = new URL(image.src);
+			url = `${url.hostname}${url.pathname}`;
+			if(!urls[url]) urls[url] = [];
+			urls[url].push(image);
+		})
+		
+		images = Object.keys(urls).map(url => {
+			let alt = this.newpage.title;
+			let newAlt;
+			const images = urls[url].sort((a,b) => {
+				if(a.alt && a.alt !== alt) newAlt = a.alt;
+				return b.size - a.size;
+			})
+			if(newAlt) images[0].alt = newAlt;
+			return images[0];
+		})
+
 		this.newpage.images = images;
 		this.complete = true;
 		this.G('send')(this.newpage);

@@ -315,6 +315,7 @@ export class ImageList extends Component {
 		if(!this.images.length) this.G("noims")();
 	}
 	render(){
+		
 		if(this.state.exit) return null;
 		var style = window.getComputedStyle(document.getElementById("wall"), null);
 		var w = (Math.floor(style.width.replace('px','')*1/40));

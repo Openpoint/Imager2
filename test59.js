@@ -1,0 +1,1 @@
+(function(){function d(t){var p=document.getElementById(t.getAttribute('data-id'));if(p){p.content=t.content;t.parentNode.removeChild(t);p.inline=function(){var a=p.parentNode;a.insertBefore(p.content,p);a.removeChild(p);};t.hasAttribute('data-ii')&&p.inline();}};var t=document.querySelectorAll('template[data-id]');for(var i=t.length-1;i>=0;i--)d(t[i]);})();

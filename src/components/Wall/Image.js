@@ -171,6 +171,7 @@ export class Image extends Component {
 				</div>
 			)
 		}else{
+			console.log(this.props.image);
 			return(
 				<div className={[this.state.loaded,'inner'].join(' ')} onClick = {()=>{this.G('slideshow')(this.ix)}} >
 					{this.state.loaded === 'loading' && filetype !== 'gif' &&(
@@ -224,7 +225,10 @@ export class Image extends Component {
 							<a href={this.props.image.url} target='_blank'><FontAwesome name='external-link' /></a>
 							<Tooltip message = {'Visit page at: '+this.props.image.urltitle} position='top' width = '200'/>
 						</div>}
-
+						{this.props.image.page && <div className='control ttParent' onClick={(event)=>{event.stopPropagation()}}>
+							<a href={this.props.image.page} target='_blank'><FontAwesome name='external-link' /></a>
+							<Tooltip message = {'Visit origin page'} position='top' width = '200'/>
+						</div>}
 						{!this.state.front && !this.props.image.deleted && (this.G('state').loggedin||this.props.image.temp) && (
 							<div className='control ttParent' onClick={(event)=>{event.stopPropagation();this.G('toFront')(this.ix)}}  >
 								<FontAwesome name='thumb-tack ' />

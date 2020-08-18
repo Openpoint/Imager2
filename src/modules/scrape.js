@@ -30,27 +30,24 @@ scraper.prototype.scrape = function(query,id){
 			return;
 		}
 		var req = self.url+encodeURIComponent(query);
-		fetch(req).then(function(response){
-			console.log(response);
-			const data = response.json();
-			console.log(data)
-			return data;
-		}).then(function(json){
-			console.log(json);
-			json.id = id;
-			json.link = query;
-			var images = [];
-			var index = [];
-			json.images.forEach(function(i){
-				i.index = tools.hash(i.src);
-				if(index.indexOf(i.index) === -1){
-					index.push(i.index);
-					images.push(i);
-				}
+		fetch(req)
+			.then(response => response.json())
+			.then(data => {
+				data.id = id;
+				data.link = query;
+				var images = [];
+				var index = [];
+				data.images.forEach(function(i){
+					i.index = tools.hash(i.src);
+					if(index.indexOf(i.index) === -1){
+						index.push(i.index);
+						images.push(i);
+					}
+				})
+				data.images = images;
+				resolve(data)
 			})
-			json.images = images;
-			resolve(json)
-		})
+			.catch(err => reject(err));
 	})
 	return p;
 }
