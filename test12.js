@@ -1,1 +1,0 @@
-window.wiz_progress&&window.wiz_progress();

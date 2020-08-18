@@ -1,1 +1,0 @@
-if (window['_rwjd']) {const wjd = {}; window['_rwjd'](wjd);}
