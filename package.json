@@ -46,7 +46,7 @@
     "jest": "20.0.4",
     "jquery": "^3.5.1",
     "js-cookie": "^2.1.4",
-    "jsonwebtoken": "^8.0.1",
+    "jsonwebtoken": "^9.0.0",
     "object-assign": "4.1.1",
     "phantom": "^6.3.0",
     "postcss-flexbugs-fixes": "3.2.0",
